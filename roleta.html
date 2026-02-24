@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Roleta Europeia</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<h1>🎰 Roleta Europeia</h1>
+<div id="usuario">Usuário: <b>{{ usuario }}</b></div>
+<div id="saldo">Saldo: R$ <span id="saldoValor">{{ saldo }}</span></div>
+
+<canvas id="c" width="320" height="320"></canvas>
+<button onclick="girar()">GIRAR</button>
+<div id="resultado"></div>
+
+<div id="mesa">
+  <div id="opcoes">
+    <div class="aposta red selecionada" onclick="selecionar('red',this)">VERMELHO</div>
+    <div class="aposta black" onclick="selecionar('black',this)">PRETO</div>
+    <div class="aposta green" onclick="selecionar('green',this)">ZERO (0)</div>
+  </div>
+  <div id="controle">
+    <input id="valorAposta" type="number" value="100" min="10" step="10">
+  </div>
+</div>
+
+<div id="historico">
+  <ul>
+  {% for h in historico %}
+    <li>{{ h }}</li>
+  {% endfor %}
+  </ul>
+</div>
+
+<a href="{{ url_for('logout') }}" style="display:block;text-align:center;color:gold;margin:10px;">Logout</a>
+
+<script>
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+
+const cx=160, cy=160;
+const R_RODA=135;
+const R_TRILHO_EXTERNO=R_RODA-12;
+const R_TRILHO_INTERNO=R_RODA-28;
+
+const numeros = [0,32,15,19,4,21,2,25,17,34,6,27,13,
+                 36,11,30,8,23,10,5,24,16,33,1,20,14,31,
+                 9,22,18,29,7,28,12,35,3,26];
+const vermelhos=[1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+const cores = numeros.map(n=> n===0? "green" : (vermelhos.includes(n)? "red" : "black"));
+
+const FATIA = 2*Math.PI/numeros.length;
+const PONTEIRO_ANGULO = -Math.PI/2; // Ponteiro no topo (fixo)
+
+let angRoda=0, saldo={{ saldo }}, girando=false;
+let apostaTipo="red", apostaValor=100;
+
+function selecionar(tipo,el){
+  apostaTipo=tipo;
+  document.querySelectorAll(".aposta").forEach(a=>a.classList.remove("selecionada"));
+  el.classList.add("selecionada");
+}
+
+function desenhar(angBola, rBola){
+  ctx.clearRect(0,0,320,320);
+
+  // Desenho da roda
+  for(let i=0;i<numeros.length;i++){
+    const angInicio = PONTEIRO_ANGULO + angRoda + i*FATIA;
+    const angFim = PONTEIRO_ANGULO + angRoda + (i+1)*FATIA;
+    
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,R_RODA,angInicio,angFim);
+    ctx.fillStyle=cores[i];
+    ctx.fill();
+    ctx.strokeStyle="#222";
+    ctx.stroke();
+
+    ctx.save();
+    ctx.translate(cx,cy);
+    ctx.rotate(angInicio + FATIA/2);
+    ctx.fillStyle="#fff";
+    ctx.font="14px Arial";
+    ctx.textAlign="right";
+    ctx.fillText(numeros[i],R_RODA-10,5);
+    ctx.restore();
+  }
+
+  // Desenho da bolinha
+  const bx=cx+Math.cos(angBola)*rBola;
+  const by=cy+Math.sin(angBola)*rBola;
+  ctx.beginPath();
+  ctx.arc(bx,by,6,0,2*Math.PI);
+  ctx.fillStyle="#fff";
+  ctx.fill();
+  ctx.strokeStyle="#ccc";
+  ctx.stroke();
+
+  // Desenho do ponteiro
+  ctx.beginPath();
+  ctx.moveTo(cx,5);
+  ctx.lineTo(cx-10,30);
+  ctx.lineTo(cx+10,30);
+  ctx.fillStyle="gold";
+  ctx.fill();
+}
+
+function normaliza(a){ return (a%(2*Math.PI)+2*Math.PI)%(2*Math.PI); }
+
+function girar(){
+  if(girando) return;
+  girando=true;
+  document.getElementById("resultado").innerHTML="";
+  apostaValor=parseInt(document.getElementById("valorAposta").value);
+  if(apostaValor>saldo || apostaValor<=0){ alert("Aposta inválida"); girando=false; return; }
+
+  fetch("/api/girar",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({tipo:apostaTipo,valor:apostaValor})
+  })
+  .then(res=>res.json())
+  .then(data=>{
+    const idxSorteado = numeros.indexOf(data.numero);
+    // Ângulo que a roda DEVE TER quando parar: número sorteado sob o ponteiro
+    const angRodaAlvo = normaliza(-idxSorteado * FATIA);
+    // Quantidade de voltas: fixa para evitar variações ruins
+    const voltas = 5;
+
+    let tempoInicio = null;
+    // Variáveis da bolinha que são atualizadas passo a passo
+    let angBolaAtual = normaliza(PONTEIRO_ANGULO + angRoda + 2*Math.PI*0.1);
+    let rBolaAtual = R_TRILHO_EXTERNO;
+
+    function animar(t){
+      if(!tempoInicio) tempoInicio = t;
+      const tempoDecorrido = t - tempoInicio;
+      const duracao = 4000;
+      const progresso = Math.min(1, tempoDecorrido / duracao);
+
+      // Roda gira gradualmente até o alvo (sem pulos)
+      angRoda = normaliza(angRoda + ( (2*Math.PI*voltas) + (angRodaAlvo - angRoda) ) * progresso);
+
+      // Bolinha segue o movimento até chegar no lugar certo
+      if(progresso < 0.8){
+        // Gira no trilho externo
+        angBolaAtual = normaliza(PONTEIRO_ANGULO + angRoda - 2*Math.PI*0.05);
+        rBolaAtual = R_TRILHO_EXTERNO;
+      } else {
+        // Vai para o lugar exato do número
+        const progFinal = (progresso - 0.8)/0.2;
+        angBolaAtual = normaliza(PONTEIRO_ANGULO + angRodaAlvo + idxSorteado*FATIA + FATIA/2);
+        rBolaAtual = R_TRILHO_EXTERNO - (R_TRILHO_EXTERNO - R_TRILHO_INTERNO)*progFinal;
+      }
+
+      desenhar(angBolaAtual, rBolaAtual);
+
+      if(progresso < 1){
+        requestAnimationFrame(animar);
+      } else {
+        // Só atualiza os dados, não mexemos mais nos ângulos!
+        saldo = data.saldo;
+        document.getElementById("saldoValor").innerText = saldo;
+        document.getElementById("resultado").innerHTML=
+          `🎯 Número: <b>${data.numero}</b> | Cor: <b>${data.cor}</b><br>💰 Retorno: <b>R$ ${data.ganho}</b>`;
+        const hist = data.historico.map(h=>`<li>${h}</li>`).join("");
+        document.getElementById("historico").innerHTML=`<ul>${hist}</ul>`;
+
+        girando=false;
+      }
+    }
+
+    requestAnimationFrame(animar);
+  });
+}
+
+// Desenha a roda inicial
+desenhar(normaliza(PONTEIRO_ANGULO + angRoda + 2*Math.PI*0.1), R_TRILHO_EXTERNO);
+</script>
+</body>
+</html>
