@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Halloween Slot 🎃</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+  font-family:Arial,Helvetica,sans-serif;
+  background:radial-gradient(circle at top,#2b0033,#000);
+  color:#fff;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.game{
+  width:100%;
+  max-width:360px;
+  background:rgba(0,0,0,0.85);
+  border-radius:18px;
+  padding:20px;
+  box-shadow:0 0 25px rgba(255,140,0,0.6);
+}
+
+h1{
+  text-align:center;
+  color:orange;
+  text-shadow:0 0 10px orange;
+  margin-bottom:10px;
+}
+
+#saldo{
+  text-align:center;
+  margin-bottom:15px;
+  font-size:18px;
+}
+
+.slot{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-bottom:20px;
+}
+
+.reel{
+  height:80px;
+  background:#111;
+  border-radius:12px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:42px;
+  box-shadow:inset 0 0 10px rgba(255,165,0,0.6);
+}
+
+button{
+  width:100%;
+  padding:15px;
+  font-size:20px;
+  background:linear-gradient(145deg,#ff6a00,#ffae00);
+  border:none;
+  border-radius:14px;
+  font-weight:bold;
+  cursor:pointer;
+  box-shadow:0 0 15px orange;
+}
+
+button:active{
+  transform:scale(0.96);
+}
+
+#msg{
+  margin-top:15px;
+  text-align:center;
+  min-height:24px;
+}
+</style>
+</head>
+<body>
+
+<div class="game">
+  <h1>🎃 Halloween Slot</h1>
+
+  <div id="saldo">Saldo: 🎃 <span id="saldoValor">1000</span></div>
+
+  <div class="slot">
+    <div class="reel" id="r1">🎃</div>
+    <div class="reel" id="r2">👻</div>
+    <div class="reel" id="r3">💀</div>
+  </div>
+
+  <button onclick="girar()">GIRAR</button>
+
+  <div id="msg"></div>
+</div>
+
+<script>
+const simbolos = ["🎃","👻","💀","🦇","🕷️"];
+let saldo = 1000;
+const aposta = 100;
+
+function sorteia(){
+  return simbolos[Math.floor(Math.random()*simbolos.length)];
+}
+
+function girar(){
+  if(saldo < aposta){
+    msg("Saldo insuficiente 😵");
+    return;
+  }
+
+  saldo -= aposta;
+  atualizaSaldo();
+
+  let i=0;
+  const anim = setInterval(()=>{
+    r1.textContent = sorteia();
+    r2.textContent = sorteia();
+    r3.textContent = sorteia();
+    i++;
+    if(i>15){
+      clearInterval(anim);
+      resultado();
+    }
+  },80);
+}
+
+function resultado(){
+  const a=r1.textContent, b=r2.textContent, c=r3.textContent;
+
+  if(a===b && b===c){
+    const ganho = aposta*5;
+    saldo += ganho;
+    msg(`🎉 JACKPOT! Ganhou ${ganho}`);
+  }else if(a===b || b===c || a===c){
+    const ganho = aposta*2;
+    saldo += ganho;
+    msg(`😈 Boa! Ganhou ${ganho}`);
+  }else{
+    msg("👻 A banca venceu!");
+  }
+
+  atualizaSaldo();
+}
+
+function atualizaSaldo(){
+  document.getElementById("saldoValor").innerText = saldo;
+}
+
+function msg(t){
+  document.getElementById("msg").innerText = t;
+}
+</script>
+
+</body>
+</html>
