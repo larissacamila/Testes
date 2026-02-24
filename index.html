@@ -4,66 +4,90 @@
   <meta charset="UTF-8">
   <title>Jogos - Teste</title>
 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
-    body{
-      margin:0;
+    * { box-sizing: border-box; margin:0; padding:0; }
+
+    body {
       font-family: Arial, Helvetica, sans-serif;
-      color:white;
-      background-image: url("fundo.jpg");
-      background-size: cover;
+      color: white;
+      background-image: url("fundo.jpg"); /* imagem de fundo */
+      background-size: cover; /* cobre toda a tela */
       background-position: center;
       background-repeat: no-repeat;
-      min-height:100vh;
+      min-height: 100vh;
     }
 
-    .overlay{
+    .overlay {
+      min-height: 100vh;
+      background: rgba(0,0,0,0.65); /* escurece o fundo */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    ul {
+      list-style: none;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    li {
+      margin-bottom: 20px;
+    }
+
+    a {
+      display: block;
+      width: 100%;
+      padding: 18px;
+      font-size: 22px;
+      text-align: center;
+      text-decoration: none;
+      color: gold;
       background: rgba(0,0,0,0.6);
-      min-height:100vh;
-      padding:20px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,215,0,0.4);
+      transition: 0.2s;
     }
 
-    h1{
-      text-align:center;
+    a:hover {
+      background: rgba(255,215,0,0.25);
     }
 
-    ul{
-      list-style:none;
-      padding:0;
-      max-width:300px;
-      margin:40px auto;
+    a:active {
+      transform: scale(0.97);
     }
 
-    li{
-      margin:15px 0;
-      text-align:center;
-    }
-
-    a{
-      color:gold;
-      font-size:22px;
-      text-decoration:none;
-      background:rgba(0,0,0,0.5);
-      padding:10px 20px;
-      border-radius:8px;
-      display:block;
-    }
-
-    a:hover{
-      background:rgba(255,215,0,0.3);
+    footer {
+      margin-top: 30px;
+      font-size: 14px;
+      opacity: 0.7;
+      text-align: center;
     }
   </style>
 </head>
 <body>
 
-<div class="overlay">
-  <h1>Lista de Jogos</h1>
+  <div class="overlay">
+    <h1>🎮 Jogos</h1>
 
-  <ul>
-    <li><a href="roleta.html">Roleta</a></li>
-    <li><a href="slot.html">Caça-níqueis</a></li>
-    <li><a href="bingo.html">Bingo</a></li>
-  </ul>
-</div>
+    <ul>
+      <li><a href="roleta.html">🎡 Roleta</a></li>
+      <li><a href="slot.html">💎 Caça-níqueis</a></li>
+      <li><a href="bingo.html">🎱 Bingo</a></li>
+    </ul>
+
+    <footer>Versão de teste</footer>
+  </div>
 
 </body>
 </html>
