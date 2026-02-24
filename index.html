@@ -1,190 +1,69 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎰 Tropical Diamonds</title>
+  <meta charset="UTF-8">
+  <title>Jogos - Teste</title>
 
-<style>
-body{
-  margin:0;
-  background:radial-gradient(circle at top,#004d40,#001a12);
-  font-family:'Trebuchet MS',Arial;
-  color:#fff;
-  text-align:center;
-}
+  <style>
+    body{
+      margin:0;
+      font-family: Arial, Helvetica, sans-serif;
+      color:white;
+      background-image: url("fundo.jpg");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      min-height:100vh;
+    }
 
-h1{
-  margin:14px 0 4px;
-  font-size:34px;
-  color:#00ffd5;
-  text-shadow:0 0 15px #00ffd5;
-}
+    .overlay{
+      background: rgba(0,0,0,0.6);
+      min-height:100vh;
+      padding:20px;
+    }
 
-h2{
-  margin:0 0 10px;
-  font-size:16px;
-  color:#ffe082;
-  letter-spacing:2px;
-}
+    h1{
+      text-align:center;
+    }
 
-#saldo{
-  font-size:20px;
-  color:gold;
-  margin-bottom:10px;
-}
+    ul{
+      list-style:none;
+      padding:0;
+      max-width:300px;
+      margin:40px auto;
+    }
 
-#maquina{
-  background:linear-gradient(180deg,#00695c,#00332d);
-  width:340px;
-  margin:15px auto;
-  padding:20px;
-  border-radius:26px;
-  border:5px solid #00ffd5;
-  box-shadow:0 0 30px rgba(0,255,213,0.6);
-}
+    li{
+      margin:15px 0;
+      text-align:center;
+    }
 
-#slot{
-  display:flex;
-  justify-content:center;
-  gap:12px;
-  margin:18px 0;
-}
+    a{
+      color:gold;
+      font-size:22px;
+      text-decoration:none;
+      background:rgba(0,0,0,0.5);
+      padding:10px 20px;
+      border-radius:8px;
+      display:block;
+    }
 
-.rolo{
-  width:90px;
-  height:110px;
-  background:linear-gradient(#ffffff,#e0f2f1);
-  border-radius:14px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:54px;
-  border:3px solid #009688;
-  box-shadow:
-    inset 0 0 12px rgba(0,0,0,0.6),
-    0 0 12px rgba(0,0,0,0.6);
-}
-
-button{
-  padding:14px 40px;
-  font-size:20px;
-  background:linear-gradient(#ffd700,#ffb300);
-  border:none;
-  border-radius:22px;
-  cursor:pointer;
-  font-weight:bold;
-  box-shadow:0 0 25px gold;
-}
-
-button:hover{filter:brightness(1.1)}
-button:disabled{opacity:0.5}
-
-#resultado{
-  margin-top:14px;
-  font-size:22px;
-  min-height:30px;
-}
-
-.win{
-  animation:brilho 0.4s infinite alternate;
-}
-
-@keyframes brilho{
-  from{box-shadow:0 0 10px #00ffd5}
-  to{box-shadow:0 0 30px #00ffd5}
-}
-
-footer{
-  margin-top:10px;
-  font-size:12px;
-  color:#aaa;
-}
-</style>
+    a:hover{
+      background:rgba(255,215,0,0.3);
+    }
+  </style>
 </head>
-
 <body>
 
-<h1>💎 Tropical Diamonds</h1>
-<h2>SLOT MACHINE</h2>
+<div class="overlay">
+  <h1>Lista de Jogos</h1>
 
-<div id="saldo">Saldo: R$ <span id="saldoValor">1000</span></div>
-
-<div id="maquina">
-  <div id="slot">
-    <div class="rolo" id="r1">💎</div>
-    <div class="rolo" id="r2">🍍</div>
-    <div class="rolo" id="r3">🌴</div>
-  </div>
-
-  <button id="btn" onclick="girar()">GIRAR</button>
-  <div id="resultado"></div>
+  <ul>
+    <li><a href="roleta.html">Roleta</a></li>
+    <li><a href="slot.html">Caça-níqueis</a></li>
+    <li><a href="bingo.html">Bingo</a></li>
+  </ul>
 </div>
-
-<footer>
-  Demo educacional • Tropical Diamonds
-</footer>
-
-<script>
-const simbolos=["💎","🍍","🌴","🔥","⭐","7️⃣"];
-let saldo=1000;
-const aposta=50;
-let girando=false;
-
-function rand(){
-  return simbolos[Math.floor(Math.random()*simbolos.length)];
-}
-
-function girar(){
-  if(girando || saldo<aposta) return;
-  girando=true;
-  btn.disabled=true;
-  resultado.innerHTML="";
-  [r1,r2,r3].forEach(r=>r.classList.remove("win"));
-
-  saldo -= aposta;
-  saldoValor.innerText = saldo;
-
-  let tempo=0;
-  const spin=setInterval(()=>{
-    r1.innerText=rand();
-    r2.innerText=rand();
-    r3.innerText=rand();
-    tempo+=100;
-
-    if(tempo>=2000){
-      clearInterval(spin);
-      finalizar();
-    }
-  },100);
-}
-
-function finalizar(){
-  const s1=r1.innerText, s2=r2.innerText, s3=r3.innerText;
-  let ganho=0;
-
-  if(s1===s2 && s2===s3){
-    if(s1==="💎") ganho = aposta*10;
-    else if(s1==="7️⃣") ganho = aposta*8;
-    else ganho = aposta*4;
-  } else if(s1===s2 || s2===s3){
-    ganho = aposta*2;
-  }
-
-  saldo += ganho;
-  saldoValor.innerText = saldo;
-
-  if(ganho>0){
-    resultado.innerHTML = `🎉 VOCÊ GANHOU R$ ${ganho}`;
-    [r1,r2,r3].forEach(r=>r.classList.add("win"));
-  } else {
-    resultado.innerHTML = `😈 A banca ganhou R$ ${aposta}`;
-  }
-
-  girando=false;
-  btn.disabled=false;
-}
-</script>
 
 </body>
 </html>
