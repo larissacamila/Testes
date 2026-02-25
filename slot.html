@@ -3,174 +3,208 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎰 Caça-Níquel</title>
+<title>🎃 Slot Halloween</title>
 
 <style>
 body{
   margin:0;
-  background:#0b0b0b;
+  background:radial-gradient(circle at top,#2b0033,#000);
   color:#fff;
-  font-family:Arial, Helvetica, sans-serif;
+  font-family:Arial,Helvetica,sans-serif;
   display:flex;
-  flex-direction:column;
+  justify-content:center;
   align-items:center;
+  min-height:100vh;
+}
+
+.game{
+  width:95%;
+  max-width:380px;
+  background:rgba(0,0,0,.85);
+  padding:18px;
+  border-radius:20px;
+  box-shadow:0 0 30px rgba(255,120,0,.6);
 }
 
 h1{
-  margin:15px;
-  color:#ffb300;
+  text-align:center;
+  color:orange;
+  text-shadow:0 0 12px orange;
 }
 
-#saldo{
-  margin-bottom:10px;
-  font-size:18px;
-}
+#saldo{text-align:center;margin:10px 0;font-size:18px}
 
-#slot{
+.grid{
   display:grid;
   grid-template-columns:repeat(4,1fr);
   gap:8px;
-  width:90vw;
-  max-width:360px;
-  background:#1c1c1c;
-  padding:10px;
-  border-radius:15px;
-  box-shadow:0 0 20px #000;
 }
 
-.celula{
-  background:#000;
-  border-radius:10px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+.cell{
   height:70px;
+  background:#000;
+  border-radius:12px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  overflow:hidden;
 }
 
-.celula img{
+.cell img{
   width:60px;
   height:60px;
+  transition:transform .15s;
+}
+
+.spin{
+  animation:spin .15s linear infinite;
+}
+
+@keyframes spin{
+  from{transform:translateY(-10px)}
+  to{transform:translateY(10px)}
 }
 
 button{
+  width:100%;
   margin-top:15px;
-  padding:12px 30px;
-  font-size:18px;
+  padding:14px;
+  font-size:20px;
   border:none;
-  border-radius:30px;
-  background:linear-gradient(45deg,#ff9800,#ff5722);
-  color:#fff;
+  border-radius:14px;
+  background:linear-gradient(145deg,#ff6a00,#ffae00);
+  font-weight:bold;
   cursor:pointer;
 }
 
-button:active{
-  transform:scale(0.95);
+.controls{
+  display:flex;
+  justify-content:space-between;
+  margin-top:10px;
 }
 
 #msg{
+  text-align:center;
   margin-top:10px;
   min-height:24px;
-  color:#00ffcc;
 }
 </style>
 </head>
 
 <body>
 
-<h1>🎃 Caça-Níquel</h1>
+<div class="game">
+  <h1>🎃 Halloween Slot</h1>
 
-<div id="saldo">Saldo: R$ <span id="valorSaldo">1000</span></div>
+  <div id="saldo">Saldo: 🎃 <span id="saldoValor">1000</span></div>
 
-<div id="slot"></div>
+  <div class="grid" id="grid"></div>
 
-<button onclick="girar()">GIRAR</button>
+  <button onclick="girar()">GIRAR</button>
 
-<div id="msg"></div>
+  <div class="controls">
+    <button onclick="toggleMusic()">🎵 Música</button>
+  </div>
+
+  <div id="msg"></div>
+</div>
+
+<audio id="bg" src="jogo2.mp3" loop></audio>
+<audio id="spin" src="audio/spin.mp3"></audio>
+<audio id="win" src="audio/win.mp3"></audio>
 
 <script>
 let saldo = 1000;
 const aposta = 50;
+const LIN=4, COL=4;
 
-// 🔮 Símbolos (adicione quantos quiser)
-const simbolos = [
-  { img:"pumpkin.jpg", peso:40 },
-  { img:"skull.jpg", peso:30 },
-  { img:"bat.jpg", peso:20 },
-  { img:"cady.jpg", peso:15 },
-  { img:"diamond.jpg", peso:5 }
+const simbolos=[
+ {img:"pumpkin.jpg",peso:40},
+ {img:"skull.jpg",peso:30},
+ {img:"bat.jpg",peso:20},
+ {img:"cady.jpg",peso:15},
+ {img:"diamond.jpg",peso:5}
 ];
 
-// Cria o grid 4x4
-const slot = document.getElementById("slot");
-const celulas = [];
+const grid=document.getElementById("grid");
+const cells=[];
 
-for(let i=0;i<16;i++){
-  const d = document.createElement("div");
-  d.className="celula";
-  const img = document.createElement("img");
+// cria grid
+for(let i=0;i<LIN*COL;i++){
+  const d=document.createElement("div");
+  d.className="cell";
+  const img=document.createElement("img");
   d.appendChild(img);
-  slot.appendChild(d);
-  celulas.push(img);
+  grid.appendChild(d);
+  cells.push(img);
 }
 
-// Sorteio ponderado (RTP controlável)
-function sorteiaSimbolo(){
-  const totalPeso = simbolos.reduce((s,a)=>s+a.peso,0);
-  let r = Math.random()*totalPeso;
+function sorteia(){
+  const total=simbolos.reduce((s,a)=>s+a.peso,0);
+  let r=Math.random()*total;
   for(const s of simbolos){
-    if(r < s.peso) return s.img;
-    r -= s.peso;
+    if(r<s.peso) return s.img;
+    r-=s.peso;
   }
-  return simbolos[0].img;
 }
 
 function girar(){
-  if(saldo < aposta){
-    document.getElementById("msg").innerText="❌ Saldo insuficiente";
-    return;
-  }
+  if(saldo<aposta){msg("Saldo insuficiente");return;}
+  saldo-=aposta;
+  upd();
+  msg("Girando...");
+  document.getElementById("spin").play();
 
-  saldo -= aposta;
-  document.getElementById("valorSaldo").innerText = saldo;
-  document.getElementById("msg").innerText="Girando...";
-
-  let giros = 0;
-  const anim = setInterval(()=>{
-    celulas.forEach(c=>{
-      c.src = sorteiaSimbolo();
-    });
-    giros++;
-    if(giros > 15){
-      clearInterval(anim);
-      verificarPremio();
+  let col=0;
+  const intervalo=setInterval(()=>{
+    for(let l=0;l<LIN;l++){
+      const idx=l*COL+col;
+      cells[idx].classList.add("spin");
+      cells[idx].src=sorteia();
     }
-  },100);
+    col++;
+    if(col>=COL){
+      clearInterval(intervalo);
+      cells.forEach(c=>c.classList.remove("spin"));
+      avaliar();
+    }
+  },250);
 }
 
-function verificarPremio(){
-  // Exemplo simples: linha cheia igual
-  const grid = celulas.map(c=>c.src);
-  let ganhou = false;
-
-  for(let l=0;l<4;l++){
-    const base = grid[l*4];
+function avaliar(){
+  let ganho=0;
+  for(let l=0;l<LIN;l++){
+    const base=cells[l*COL].src;
     if(
-      grid[l*4+1]===base &&
-      grid[l*4+2]===base &&
-      grid[l*4+3]===base
+      cells[l*COL+1].src===base &&
+      cells[l*COL+2].src===base &&
+      cells[l*COL+3].src===base
     ){
-      ganhou = true;
+      ganho+=aposta*4;
     }
   }
 
-  if(ganhou){
-    saldo += 300;
-    document.getElementById("msg").innerText="🎉 LINHA COMPLETA! +300";
+  if(ganho>0){
+    saldo+=ganho;
+    document.getElementById("win").play();
+    msg("🎉 Você ganhou "+ganho);
   }else{
-    document.getElementById("msg").innerText="😈Casa";
+    msg("👻 A banca venceu");
   }
+  upd();
+}
 
-  document.getElementById("valorSaldo").innerText = saldo;
+function upd(){
+  document.getElementById("saldoValor").innerText=saldo;
+}
+
+function msg(t){
+  document.getElementById("msg").innerText=t;
+}
+
+function toggleMusic(){
+  const bg=document.getElementById("bg");
+  bg.paused?bg.play():bg.pause();
 }
 </script>
 
