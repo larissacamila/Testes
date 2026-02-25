@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎃 Slot Halloween</title>
+<title>🃏 Jogo 21</title>
 
 <style>
 body{
   margin:0;
-  background:radial-gradient(circle at top,#2b0033,#000);
+  background:radial-gradient(circle,#004d2a,#001a0f);
   color:#fff;
   font-family:Arial,Helvetica,sans-serif;
   display:flex;
@@ -21,191 +21,156 @@ body{
   width:95%;
   max-width:380px;
   background:rgba(0,0,0,.85);
-  padding:18px;
-  border-radius:20px;
-  box-shadow:0 0 30px rgba(255,120,0,.6);
+  padding:16px;
+  border-radius:16px;
+  box-shadow:0 0 25px #000;
 }
 
-h1{
-  text-align:center;
-  color:orange;
-  text-shadow:0 0 12px orange;
+h1{text-align:center;color:gold}
+
+.hand{
+  margin:10px 0;
 }
 
-#saldo{text-align:center;margin:10px 0;font-size:18px}
-
-.grid{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:8px;
-}
-
-.cell{
-  height:70px;
-  background:#000;
-  border-radius:12px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  overflow:hidden;
-}
-
-.cell img{
-  width:60px;
+.card{
+  display:inline-block;
+  background:#fff;
+  color:#000;
+  width:45px;
   height:60px;
-  transition:transform .15s;
-}
-
-.spin{
-  animation:spin .15s linear infinite;
-}
-
-@keyframes spin{
-  from{transform:translateY(-10px)}
-  to{transform:translateY(10px)}
+  margin:4px;
+  border-radius:6px;
+  font-size:18px;
+  font-weight:bold;
+  text-align:center;
+  line-height:60px;
 }
 
 button{
   width:100%;
-  margin-top:15px;
-  padding:14px;
-  font-size:20px;
+  margin-top:10px;
+  padding:12px;
+  font-size:18px;
   border:none;
-  border-radius:14px;
-  background:linear-gradient(145deg,#ff6a00,#ffae00);
+  border-radius:12px;
+  background:gold;
   font-weight:bold;
-  cursor:pointer;
 }
 
-.controls{
-  display:flex;
-  justify-content:space-between;
-  margin-top:10px;
-}
-
-#msg{
-  text-align:center;
-  margin-top:10px;
-  min-height:24px;
-}
+#msg{text-align:center;margin-top:10px}
 </style>
 </head>
 
 <body>
 
 <div class="game">
-  <h1>🎃 Halloween Slot</h1>
+  <h1>🃏 Jogo 21</h1>
 
-  <div id="saldo">Saldo: 🎃 <span id="saldoValor">1000</span></div>
+  <div>Saldo: R$ <span id="saldo">1000</span></div>
 
-  <div class="grid" id="grid"></div>
-
-  <button onclick="girar()">GIRAR</button>
-
-  <div class="controls">
-    <button onclick="toggleMusic()">🎵 Música</button>
+  <div class="hand">
+    <b>Você:</b>
+    <div id="player"></div>
+    <div>Total: <span id="pontosJogador">0</span></div>
   </div>
+
+  <div class="hand">
+    <b>Banca:</b>
+    <div id="dealer"></div>
+    <div>Total: <span id="pontosBanca">?</span></div>
+  </div>
+
+  <button onclick="comprar()">Comprar Carta</button>
+  <button onclick="parar()">Parar</button>
 
   <div id="msg"></div>
 </div>
 
-<audio id="bg" src="jogo2.mp3" loop></audio>
-<audio id="spin" src="audio/spin.mp3"></audio>
-<audio id="win" src="audio/win.mp3"></audio>
-
 <script>
 let saldo = 1000;
 const aposta = 50;
-const LIN=4, COL=4;
 
-const simbolos=[
- {img:"pumpkin.jpg",peso:40},
- {img:"skull.jpg",peso:30},
- {img:"bat.jpg",peso:20},
- {img:"cady.jpg",peso:15},
- {img:"diamond.jpg",peso:5}
-];
+let baralho = [];
+let jogador = [];
+let banca = [];
 
-const grid=document.getElementById("grid");
-const cells=[];
-
-// cria grid
-for(let i=0;i<LIN*COL;i++){
-  const d=document.createElement("div");
-  d.className="cell";
-  const img=document.createElement("img");
-  d.appendChild(img);
-  grid.appendChild(d);
-  cells.push(img);
+function criarBaralho(){
+  baralho = [];
+  const valores = [2,3,4,5,6,7,8,9,10,10,10,10,11]; // J,Q,K=10 A=11
+  for(let i=0;i<4;i++){
+    valores.forEach(v=>baralho.push(v));
+  }
+  baralho.sort(()=>Math.random()-0.5);
 }
 
-function sorteia(){
-  const total=simbolos.reduce((s,a)=>s+a.peso,0);
-  let r=Math.random()*total;
-  for(const s of simbolos){
-    if(r<s.peso) return s.img;
-    r-=s.peso;
+function comprarCarta(){
+  return baralho.pop();
+}
+
+function total(mao){
+  let t = mao.reduce((a,b)=>a+b,0);
+  while(t>21 && mao.includes(11)){
+    mao[mao.indexOf(11)] = 1;
+    t = mao.reduce((a,b)=>a+b,0);
+  }
+  return t;
+}
+
+function iniciar(){
+  criarBaralho();
+  jogador = [comprarCarta(), comprarCarta()];
+  banca = [comprarCarta()];
+  atualizar();
+  msg("");
+}
+
+function atualizar(){
+  document.getElementById("player").innerHTML =
+    jogador.map(c=>`<div class="card">${c}</div>`).join("");
+  document.getElementById("dealer").innerHTML =
+    banca.map(c=>`<div class="card">${c}</div>`).join("");
+  document.getElementById("pontosJogador").innerText = total(jogador);
+}
+
+function comprar(){
+  jogador.push(comprarCarta());
+  atualizar();
+  if(total(jogador)>21){
+    saldo-=aposta;
+    fim("💥 Estourou! Você perdeu");
   }
 }
 
-function girar(){
-  if(saldo<aposta){msg("Saldo insuficiente");return;}
-  saldo-=aposta;
-  upd();
-  msg("Girando...");
-  document.getElementById("spin").play();
-
-  let col=0;
-  const intervalo=setInterval(()=>{
-    for(let l=0;l<LIN;l++){
-      const idx=l*COL+col;
-      cells[idx].classList.add("spin");
-      cells[idx].src=sorteia();
-    }
-    col++;
-    if(col>=COL){
-      clearInterval(intervalo);
-      cells.forEach(c=>c.classList.remove("spin"));
-      avaliar();
-    }
-  },250);
-}
-
-function avaliar(){
-  let ganho=0;
-  for(let l=0;l<LIN;l++){
-    const base=cells[l*COL].src;
-    if(
-      cells[l*COL+1].src===base &&
-      cells[l*COL+2].src===base &&
-      cells[l*COL+3].src===base
-    ){
-      ganho+=aposta*4;
-    }
+function parar(){
+  while(total(banca)<17){
+    banca.push(comprarCarta());
   }
 
-  if(ganho>0){
-    saldo+=ganho;
-    document.getElementById("win").play();
-    msg("🎉 Você ganhou "+ganho);
+  const pj = total(jogador);
+  const pb = total(banca);
+
+  document.getElementById("pontosBanca").innerText = pb;
+
+  if(pb>21 || pj>pb){
+    saldo+=aposta;
+    fim("🎉 Você ganhou!");
   }else{
-    msg("👻 A banca venceu");
+    saldo-=aposta;
+    fim("😈 A banca venceu");
   }
-  upd();
 }
 
-function upd(){
-  document.getElementById("saldoValor").innerText=saldo;
+function fim(texto){
+  document.getElementById("saldo").innerText = saldo;
+  msg(texto);
+  setTimeout(iniciar,2000);
 }
 
 function msg(t){
-  document.getElementById("msg").innerText=t;
+  document.getElementById("msg").innerText = t;
 }
 
-function toggleMusic(){
-  const bg=document.getElementById("bg");
-  bg.paused?bg.play():bg.pause();
-}
+iniciar();
 </script>
 
 </body>
