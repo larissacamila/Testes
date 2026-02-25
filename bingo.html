@@ -3,211 +3,234 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🃏 Mesa de Cartas</title>
+<title>🎰 Cassino de Cartas</title>
 
 <style>
 body{
   margin:0;
-  background:radial-gradient(circle,#003d2b,#00150e);
   font-family:Arial,Helvetica,sans-serif;
+  background:radial-gradient(circle,#1b4d3e,#020f0a);
   color:#fff;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  min-height:100vh;
-}
-
-.game{
-  width:95%;
-  max-width:420px;
-  background:rgba(0,0,0,.85);
-  padding:16px;
-  border-radius:18px;
-  box-shadow:0 0 25px rgba(0,0,0,.8);
-}
-
-h1{
   text-align:center;
-  color:gold;
 }
 
+/* Topo */
+header{
+  padding:10px;
+}
 #saldo{
-  text-align:center;
-  margin:8px 0;
-  font-size:18px;
+  font-size:20px;
+  margin:5px 0;
 }
 
+/* Mesa */
 .mesa{
   display:grid;
-  grid-template-columns:repeat(5,1fr);
-  gap:8px;
-  margin:15px 0;
+  grid-template-columns:repeat(auto-fit,minmax(70px,1fr));
+  gap:10px;
+  max-width:420px;
+  margin:20px auto;
+  padding:10px;
 }
 
-.carta{
-  background:#000;
-  border-radius:12px;
-  height:90px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  overflow:hidden;
-}
-
-.carta img{
+.card{
   width:70px;
-  height:90px;
-  transition:transform .2s;
+  height:100px;
+  background:#111;
+  background-size:cover;
+  background-position:center;
+  border-radius:12px;
+  box-shadow:0 6px 15px rgba(0,0,0,.6);
 }
 
-.spin{
-  animation:spin .15s linear infinite;
+/* Animações */
+.spinning{
+  animation:spin .25s infinite linear;
+  filter:blur(2px);
+}
+
+.stop{
+  animation:stop .4s ease-out;
+}
+
+.win{
+  animation:glow 1s infinite alternate;
 }
 
 @keyframes spin{
-  from{transform:translateY(-8px)}
-  to{transform:translateY(8px)}
+  0%{transform:translateY(0) rotate(0)}
+  50%{transform:translateY(-6px) rotate(2deg)}
+  100%{transform:translateY(0) rotate(-2deg)}
 }
 
-.controls{
-  display:flex;
-  gap:8px;
+@keyframes stop{
+  from{transform:scale(1.2)}
+  to{transform:scale(1)}
+}
+
+@keyframes glow{
+  from{box-shadow:0 0 10px gold}
+  to{box-shadow:0 0 30px gold}
+}
+
+/* Controles */
+.controles{
+  margin:15px;
 }
 
 input{
-  flex:1;
-  padding:10px;
-  border-radius:10px;
-  border:none;
+  padding:8px;
   font-size:16px;
+  width:120px;
+  border-radius:8px;
+  border:none;
 }
 
 button{
-  flex:1;
-  padding:12px;
+  margin-top:10px;
+  padding:12px 30px;
+  font-size:18px;
+  background:gold;
   border:none;
   border-radius:12px;
-  font-size:18px;
-  font-weight:bold;
-  background:linear-gradient(145deg,#ffb300,#ff6a00);
   cursor:pointer;
 }
 
-#msg{
-  text-align:center;
-  margin-top:10px;
-  min-height:22px;
+/* Mobile */
+@media(max-width:600px){
+  .card{
+    width:60px;
+    height:90px;
+  }
 }
 </style>
 </head>
 
 <body>
 
-<div class="game">
-  <h1>🃏 Diamante Tropical</h1>
-
+<header>
+  <h2>🎴 Cassino de Cartas</h2>
   <div id="saldo">Saldo: R$ <span id="saldoValor">1000</span></div>
+</header>
 
-  <div class="mesa" id="mesa"></div>
+<div class="mesa" id="mesa"></div>
 
-  <div class="controls">
-    <input type="number" id="aposta" value="50" min="10" step="10">
-    <button onclick="jogar()">JOGAR</button>
-  </div>
-
-  <div id="msg"></div>
+<div class="controles">
+  <input type="number" id="aposta" value="50" min="10" step="10"><br>
+  <button onclick="jogar()">🎰 JOGAR</button>
 </div>
 
+<div id="resultado"></div>
+
+<!-- Sons -->
+<audio id="bgMusic" loop>
+  <source src="jogo2.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="spinSound">
+  <source src="sounds/spin.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="winSound">
+  <source src="sounds/win.mp3" type="audio/mpeg">
+</audio>
+
 <script>
+// =======================
+// CONFIGURAÇÃO
+// =======================
+const TOTAL_CARTAS = 5;
+
 let saldo = 1000;
 
-const cartas = [
-  {img:"carta1.jpg", valor:1},
-  {img:"carta2.jpg", valor:2},
-  {img:"carta3.jpg", valor:3},
-  {img:"carta4.jpg", valor:4},
-  {img:"carta5.jpg", valor:5},
-  {img:"coringa.jpg", valor:10, especial:true}
+// Símbolos (estilo slot)
+const simbolos = [
+  { img:"carta1.jpg", valor:1, peso:40 },
+  { img:"carta2.jpg", valor:2, peso:30 },
+  { img:"carta3.jpg", valor:3, peso:20 },
+  { img:"carta4.jpg", valor:4, peso:15 },
+  { img:"carta5.jpg", valor:5, peso:10 },
+  { img:"coringa.jpg", valor:10, peso:5 } // especial
 ];
 
+// =======================
+// INICIALIZA
+// =======================
 const mesa = document.getElementById("mesa");
-const slots = [];
 
-// cria 5 slots
-for(let i=0;i<5;i++){
-  const d=document.createElement("div");
-  d.className="carta";
-  const img=document.createElement("img");
-  d.appendChild(img);
-  mesa.appendChild(d);
-  slots.push(img);
+for(let i=0;i<TOTAL_CARTAS;i++){
+  const c=document.createElement("div");
+  c.className="card";
+  c.dataset.valor=0;
+  mesa.appendChild(c);
 }
 
-function sorteia(){
-  return cartas[Math.floor(Math.random()*cartas.length)];
+// Música (iPhone)
+document.addEventListener("click",()=>{
+  const bg=document.getElementById("bgMusic");
+  bg.volume=0.4;
+  bg.play().catch(()=>{});
+},{once:true});
+
+// =======================
+// FUNÇÕES
+// =======================
+function sortear(){
+  const totalPeso = simbolos.reduce((s,a)=>s+a.peso,0);
+  let r = Math.random()*totalPeso;
+  for(const s of simbolos){
+    r-=s.peso;
+    if(r<=0) return s;
+  }
 }
 
 function jogar(){
   const aposta = parseInt(document.getElementById("aposta").value);
   if(aposta<=0 || aposta>saldo){
-    msg("Aposta inválida");
+    alert("Aposta inválida");
     return;
   }
 
-  saldo -= aposta;
+  saldo-=aposta;
   atualizarSaldo();
-  msg("Embaralhando...");
+  document.getElementById("resultado").innerHTML="";
 
-  let i=0;
-  const anim = setInterval(()=>{
-    const c = sorteia();
-    slots[i].classList.add("spin");
-    slots[i].src = c.img;
-    slots[i].dataset.valor = c.valor;
-    slots[i].dataset.especial = c.especial || false;
+  const cartas = document.querySelectorAll(".card");
+  document.getElementById("spinSound").play();
 
-    i++;
-    if(i>=5){
-      clearInterval(anim);
-      slots.forEach(s=>s.classList.remove("spin"));
-      avaliar(aposta);
-    }
-  },200);
-}
-
-function avaliar(aposta){
-  let total = 0;
-  let coringas = 0;
-
-  slots.forEach(s=>{
-    total += parseInt(s.dataset.valor);
-    if(s.dataset.especial==="true") coringas++;
+  cartas.forEach(c=>{
+    c.className="card spinning";
   });
 
-  let ganho = 0;
+  setTimeout(()=>{
+    let total=0;
 
-  if(coringas >= 1){
-    ganho = aposta * 3;
-    msg("🃏 Coringa! Você ganhou x3");
-  }
-  else if(total >= 15){
-    ganho = aposta * 2;
-    msg("🎉 Boa mão! Você ganhou x2");
-  }
-  else{
-    msg("😈 A banca venceu");
-  }
+    cartas.forEach(c=>{
+      const s = sortear();
+      c.style.backgroundImage=`url(${s.img})`;
+      c.dataset.valor=s.valor;
+      total+=s.valor;
+      c.className="card stop";
+    });
 
-  saldo += ganho;
-  atualizarSaldo();
+    // REGRA DE GANHO (RTP controlável)
+    let ganho=0;
+    if(total>=18){
+      ganho = aposta*2;
+      cartas.forEach(c=>c.classList.add("win"));
+      document.getElementById("winSound").play();
+    }
+
+    saldo+=ganho;
+    atualizarSaldo();
+
+    document.getElementById("resultado").innerHTML=
+      `🃏 Soma: <b>${total}</b><br>💰 Ganho: <b>R$ ${ganho}</b>`;
+  },1800);
 }
 
 function atualizarSaldo(){
-  document.getElementById("saldoValor").innerText = saldo;
-}
-
-function msg(t){
-  document.getElementById("msg").innerText = t;
+  document.getElementById("saldoValor").innerText=saldo;
 }
 </script>
 
