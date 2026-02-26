@@ -14,10 +14,10 @@ body{
   text-align:center;
 }
 
-/* Topo */
 header{
   padding:10px;
 }
+
 #saldo{
   font-size:20px;
   margin:5px 0;
@@ -33,14 +33,16 @@ header{
   padding:10px;
 }
 
+/* Carta */
 .card{
   width:70px;
   height:100px;
-  background:#111;
   background-size:cover;
   background-position:center;
   border-radius:12px;
   box-shadow:0 6px 15px rgba(0,0,0,.6);
+  transform-style:preserve-3d;
+  transition:transform .6s;
 }
 
 /* Animações */
@@ -55,6 +57,10 @@ header{
 
 .win{
   animation:glow 1s infinite alternate;
+}
+
+.reveal{
+  transform:rotateY(180deg);
 }
 
 @keyframes spin{
@@ -109,7 +115,7 @@ button{
 <body>
 
 <header>
-  <h2>🎴Soma 18 ou mais e leve a boa! Às=1 Bruxa = 10</h2>
+  <h2>🎴 Cassino de Cartas</h2>
   <div id="saldo">Saldo: R$ <span id="saldoValor">1000</span></div>
 </header>
 
@@ -136,48 +142,44 @@ button{
 </audio>
 
 <script>
-// =======================
-// CONFIGURAÇÃO
-// =======================
+// ================= CONFIG =================
 const TOTAL_CARTAS = 5;
+const CARTA_BACK = "back.jpg";
 
 let saldo = 1000;
 
-// Símbolos (estilo slot)
+// Símbolos (slot disfarçado)
 const simbolos = [
-  { img:"carta1.jpg", valor:1, peso:40 },
+  { img:"carta1.jpg", valor:1, peso:35 },
   { img:"carta2.png", valor:2, peso:30 },
   { img:"carta3.jpg", valor:3, peso:20 },
-  { img:"carta4.jpg", valor:4, peso:15 },
-  { img:"carta5.jpg", valor:5, peso:10 },
-  { img:"coringa.jpg", valor:10, peso:5 } // especial
+  { img:"carta4.jpg", valor:4, peso:10 },
+  { img:"carta5.jpg", valor:5, peso:4 },
+  { img:"coringa.jpg", valor:10, peso:1 }
 ];
 
-// =======================
-// INICIALIZA
-// =======================
+// ================= INIT =================
 const mesa = document.getElementById("mesa");
 
 for(let i=0;i<TOTAL_CARTAS;i++){
   const c=document.createElement("div");
   c.className="card";
+  c.style.backgroundImage=`url(${CARTA_BACK})`;
   c.dataset.valor=0;
   mesa.appendChild(c);
 }
 
-// Música (iPhone)
+// Música (obrigatório para iPhone)
 document.addEventListener("click",()=>{
   const bg=document.getElementById("bgMusic");
   bg.volume=0.4;
   bg.play().catch(()=>{});
 },{once:true});
 
-// =======================
-// FUNÇÕES
-// =======================
+// ================= FUNÇÕES =================
 function sortear(){
   const totalPeso = simbolos.reduce((s,a)=>s+a.peso,0);
-  let r = Math.random()*totalPeso;
+  let r=Math.random()*totalPeso;
   for(const s of simbolos){
     r-=s.peso;
     if(r<=0) return s;
@@ -185,7 +187,7 @@ function sortear(){
 }
 
 function jogar(){
-  const aposta = parseInt(document.getElementById("aposta").value);
+  const aposta=parseInt(document.getElementById("aposta").value);
   if(aposta<=0 || aposta>saldo){
     alert("Aposta inválida");
     return;
@@ -195,28 +197,29 @@ function jogar(){
   atualizarSaldo();
   document.getElementById("resultado").innerHTML="";
 
-  const cartas = document.querySelectorAll(".card");
+  const cartas=document.querySelectorAll(".card");
   document.getElementById("spinSound").play();
 
   cartas.forEach(c=>{
     c.className="card spinning";
+    c.style.backgroundImage=`url(${CARTA_BACK})`;
+    c.classList.remove("reveal","win");
   });
 
   setTimeout(()=>{
     let total=0;
 
     cartas.forEach(c=>{
-      const s = sortear();
+      const s=sortear();
       c.style.backgroundImage=`url(${s.img})`;
       c.dataset.valor=s.valor;
       total+=s.valor;
-      c.className="card stop";
+      c.className="card stop reveal";
     });
 
-    // REGRA DE GANHO (RTP controlável)
     let ganho=0;
     if(total>=18){
-      ganho = aposta*2;
+      ganho=aposta*2;
       cartas.forEach(c=>c.classList.add("win"));
       document.getElementById("winSound").play();
     }
