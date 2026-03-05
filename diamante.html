@@ -105,6 +105,14 @@ margin-bottom:10px;
 
 }
 
+.result{
+
+margin-top:10px;
+font-size:20px;
+color:gold;
+
+}
+
 .win{
 
 animation:flash 0.4s infinite;
@@ -126,7 +134,7 @@ animation:flash 0.4s infinite;
 
 <h1>🎰 Cassino Slot</h1>
 
-<div class="slot">
+<div class="slot" id="slot">
 
 <div class="reels">
 
@@ -144,12 +152,13 @@ Créditos: <span id="credits"></span>
 
 <button id="spin">GIRAR</button>
 
+<div class="result" id="result">
+Boa sorte!
 </div>
 
 </div>
 
-<audio id="spinSound" src="spin.mp3"></audio>
-<audio id="winSound" src="win.mp3"></audio>
+</div>
 
 <script>
 
@@ -168,11 +177,9 @@ document.getElementById("s3")
 ];
 
 const spinBtn=document.getElementById("spin");
-
 const creditsEl=document.getElementById("credits");
-
-const spinSound=document.getElementById("spinSound");
-const winSound=document.getElementById("winSound");
+const resultEl=document.getElementById("result");
+const slot=document.getElementById("slot");
 
 let credits=localStorage.getItem("slotCredits");
 
@@ -206,13 +213,17 @@ function buildStrip(strip){
 
 strip.innerHTML="";
 
-for(let i=0;i<30;i++){
+let list=[];
 
-const s=randomSymbol();
+for(let i=0;i<20;i++){
 
-strip.appendChild(createSymbol(s));
+list.push(randomSymbol());
 
 }
+
+list.forEach(s=>strip.appendChild(createSymbol(s)));
+
+list.forEach(s=>strip.appendChild(createSymbol(s)));
 
 }
 
@@ -226,20 +237,20 @@ function spin(){
 
 if(credits<=0){
 
-alert("Sem créditos");
-
+resultEl.innerText="Sem créditos!";
 return;
 
 }
+
+slot.classList.remove("win");
 
 credits--;
 
 updateCredits();
 
-spinBtn.disabled=true;
+resultEl.innerText="Girando...";
 
-spinSound.currentTime=0;
-spinSound.play();
+spinBtn.disabled=true;
 
 let results=[];
 
@@ -249,14 +260,13 @@ buildStrip(strip);
 
 const symbols=strip.children;
 
-const stopIndex=Math.floor(Math.random()*symbols.length);
+const stopIndex=Math.floor(Math.random()*20);
 
 const offset=stopIndex*100;
 
-const distance=(symbols.length*100*2)+offset;
+const distance=(symbols.length*100)+offset;
 
 strip.style.transition="none";
-
 strip.style.transform="translateY(0px)";
 
 setTimeout(()=>{
@@ -270,7 +280,6 @@ strip.style.transform="translateY(-"+distance+"px)";
 setTimeout(()=>{
 
 strip.style.transition="none";
-
 strip.style.transform="translateY(-"+offset+"px)";
 
 results.push(symbols[stopIndex].dataset.symbol);
@@ -278,7 +287,6 @@ results.push(symbols[stopIndex].dataset.symbol);
 if(results.length===3){
 
 checkWin(results);
-
 spinBtn.disabled=false;
 
 }
@@ -291,10 +299,6 @@ spinBtn.disabled=false;
 
 function checkWin(r){
 
-let slot=document.querySelector(".slot");
-
-slot.classList.remove("win");
-
 if(r[0]===r[1] && r[1]===r[2]){
 
 let prize=20;
@@ -303,11 +307,9 @@ if(r[0]=="wild") prize=50;
 
 credits+=prize;
 
-winSound.play();
-
 slot.classList.add("win");
 
-alert("🎉 JACKPOT! "+prize);
+resultEl.innerText="🎉 JACKPOT! +" + prize + " créditos";
 
 }
 
@@ -315,9 +317,13 @@ else if(r.includes("wild")){
 
 credits+=10;
 
-winSound.play();
+resultEl.innerText="⭐ Wild pagou +10";
 
-alert("⭐ Wild pagou 10");
+}
+
+else{
+
+resultEl.innerText="Não ganhou. Tente novamente.";
 
 }
 
