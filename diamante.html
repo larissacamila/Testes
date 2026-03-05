@@ -3,128 +3,55 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎰 Cassino Slot</title>
+<title>Slot Cassino</title>
 
 <style>
 
 body{
-background:radial-gradient(circle,#2a0066,#0a001f);
-font-family:Arial;
-display:flex;
-flex-direction:column;
-align-items:center;
-padding:20px;
+background:#111;
 color:white;
+text-align:center;
+font-family:Arial;
 }
 
 h1{
-margin-bottom:20px;
+margin-top:20px;
 }
 
 .slot{
-
-background:#4b0082;
-padding:20px;
-border-radius:15px;
-box-shadow:0 0 30px black;
-
-}
-
-.reels{
-
 display:flex;
-gap:10px;
-margin-bottom:20px;
-
-}
-
-.reel{
-
-width:110px;
-height:300px;
-overflow:hidden;
-border-radius:10px;
-border:4px solid gold;
-background:white;
-position:relative;
-
-}
-
-.strip{
-
-position:absolute;
-width:100%;
-top:0;
-
-}
-
-.symbol{
-
-height:100px;
-display:flex;
-align-items:center;
 justify-content:center;
-
+gap:20px;
+margin-top:40px;
 }
 
-.symbol img{
-
-max-width:90%;
-max-height:90%;
-
+.rolo{
+width:120px;
+height:120px;
+background:#222;
+border:4px solid gold;
+border-radius:10px;
+overflow:hidden;
 }
 
-.controls{
-
-text-align:center;
-
+.rolo img{
+width:100%;
+height:100%;
 }
 
 button{
-
+margin-top:30px;
 padding:15px 40px;
-font-size:18px;
-border:none;
-border-radius:20px;
-background:#ff0055;
-color:white;
-cursor:pointer;
-
-}
-
-button:disabled{
-
-background:#555;
-
-}
-
-.credits{
-
-font-size:22px;
-margin-bottom:10px;
-
-}
-
-.result{
-
-margin-top:10px;
 font-size:20px;
-color:gold;
-
+background:gold;
+border:none;
+border-radius:10px;
+cursor:pointer;
 }
 
-.win{
-
-animation:flash 0.4s infinite;
-
-}
-
-@keyframes flash{
-
-0%{box-shadow:0 0 10px yellow;}
-50%{box-shadow:0 0 30px gold;}
-100%{box-shadow:0 0 10px yellow;}
-
+#saldo{
+margin-top:20px;
+font-size:20px;
 }
 
 </style>
@@ -132,220 +59,133 @@ animation:flash 0.4s infinite;
 
 <body>
 
-<h1>🎰 Diamantino Slot</h1>
+<h1>🎰 SLOT TIGRE</h1>
 
-<div class="slot" id="slot">
-
-<div class="reels">
-
-<div class="reel"><div class="strip" id="s1"></div></div>
-<div class="reel"><div class="strip" id="s2"></div></div>
-<div class="reel"><div class="strip" id="s3"></div></div>
-
+<div id="saldo">
+Saldo: R$ <span id="valorSaldo">100</span>
 </div>
 
-<div class="controls">
+<div class="slot">
 
-<div class="credits">
-Créditos: <span id="credits"></span>
+<div class="rolo">
+<img id="r1" src="https://i.imgur.com/7Q1Z6V6.png">
 </div>
 
-<button id="spin">GIRAR</button>
+<div class="rolo">
+<img id="r2" src="https://i.imgur.com/7Q1Z6V6.png">
+</div>
 
-<div class="result" id="result">
-Boa sorte!
+<div class="rolo">
+<img id="r3" src="https://i.imgur.com/7Q1Z6V6.png">
 </div>
 
 </div>
 
-</div>
+<button onclick="girar()">GIRAR</button>
+
+<audio id="spinSound" src="https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3"></audio>
+<audio id="winSound" src="https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3"></audio>
+
+<audio autoplay loop>
+<source src="https://cdn.pixabay.com/audio/2022/03/15/audio_115b9bce37.mp3">
+</audio>
+
 <script>
 
-const symbols=[
-{src:"forte.jpg",name:"forte"},
-{src:"folha.jpg",name:"folha"},
-{src:"moeda.jpg",name:"moeda"},
-{src:"wild.jpg",name:"wild"},
-{src:"saco.jpg",name:"saco"}
-];
+let saldo = 100
+let aposta = 2
 
-const strips=[
-document.getElementById("s1"),
-document.getElementById("s2"),
-document.getElementById("s3")
-];
+const simbolos = [
+{img:"https://i.imgur.com/7Q1Z6V6.png", nome:"moeda"},
+{img:"https://i.imgur.com/7Q1Z6V6.png", nome:"moeda"},
+{img:"https://i.imgur.com/7Q1Z6V6.png", nome:"moeda"},
+{img:"https://i.imgur.com/7Q1Z6V6.png", nome:"moeda"},
 
-const spinBtn=document.getElementById("spin");
-const creditsEl=document.getElementById("credits");
-const resultEl=document.getElementById("result");
-const slot=document.getElementById("slot");
+{img:"https://i.imgur.com/k3KJ3w4.png", nome:"carta"},
+{img:"https://i.imgur.com/k3KJ3w4.png", nome:"carta"},
+{img:"https://i.imgur.com/k3KJ3w4.png", nome:"carta"},
 
-const spinSound=new Audio("spin.mp3");
-const winSound=new Audio("win.mp3");
+{img:"https://i.imgur.com/0E6Z9qC.png", nome:"tigre"},
+{img:"https://i.imgur.com/0E6Z9qC.png", nome:"tigre"},
 
-let credits=localStorage.getItem("slotCredits");
+{img:"https://i.imgur.com/9Xn4YqA.png", nome:"diamante"},
 
-if(!credits) credits=100;
+{img:"https://i.imgur.com/VuKQF4C.png", nome:"jackpot"}
+]
 
-credits=parseInt(credits);
+function sorteio(){
+return simbolos[Math.floor(Math.random()*simbolos.length)]
+}
 
-creditsEl.innerText=credits;
+function atualizarSaldo(){
+document.getElementById("valorSaldo").innerText = saldo
+}
 
-function randomSymbol(){
+function girar(){
 
-return symbols[Math.floor(Math.random()*symbols.length)];
+if(saldo < aposta){
+alert("Saldo insuficiente")
+return
+}
+
+saldo -= aposta
+atualizarSaldo()
+
+document.getElementById("spinSound").play()
+
+let giros = 20
+
+let animacao = setInterval(()=>{
+
+let s1 = sorteio()
+let s2 = sorteio()
+let s3 = sorteio()
+
+document.getElementById("r1").src = s1.img
+document.getElementById("r2").src = s2.img
+document.getElementById("r3").src = s3.img
+
+giros--
+
+if(giros<=0){
+
+clearInterval(animacao)
+
+resultado(s1,s2,s3)
 
 }
 
-function createSymbol(symbol){
-
-const div=document.createElement("div");
-
-div.className="symbol";
-
-div.innerHTML=`<img src="${symbol.src}">`;
-
-div.dataset.symbol=symbol.name;
-
-return div;
+},80)
 
 }
 
-function buildStrip(strip){
+function resultado(a,b,c){
 
-let list=[];
+if(a.nome == b.nome && b.nome == c.nome){
 
-for(let i=0;i<30;i++){
-list.push(randomSymbol());
-}
+let premio = 0
 
-list.forEach(s=>strip.appendChild(createSymbol(s)));
-list.forEach(s=>strip.appendChild(createSymbol(s)));
+if(a.nome=="moeda") premio = aposta*5
+if(a.nome=="carta") premio = aposta*10
+if(a.nome=="tigre") premio = aposta*25
+if(a.nome=="diamante") premio = aposta*100
+if(a.nome=="jackpot") premio = aposta*500
 
-}
+saldo += premio
 
-function init(){
-
-strips.forEach(strip=>{
-buildStrip(strip);
-});
-
-}
-
-function spin(){
-
-if(credits<=0){
-
-resultEl.innerText="Sem créditos!";
-return;
-
-}
-
-slot.classList.remove("win");
-
-credits--;
-updateCredits();
-
-resultEl.innerText="Girando...";
-
-spinBtn.disabled=true;
-
-spinSound.currentTime=0;
-spinSound.play();
-
-let results=[];
-
-strips.forEach((strip,i)=>{
-
-const symbolsList=strip.children;
-
-const stopIndex=Math.floor(Math.random()*30);
-
-const offset=stopIndex*100;
-
-const distance=(symbolsList.length*100)+offset;
-
-strip.style.transition="none";
+document.getElementById("winSound").play()
 
 setTimeout(()=>{
-
-strip.style.transition="transform "+(2+i*0.5)+"s cubic-bezier(.2,.8,.2,1)";
-strip.style.transform="translateY(-"+distance+"px)";
-
-},50);
-
-setTimeout(()=>{
-
-strip.style.transition="none";
-
-strip.style.transform="translateY(-"+offset+"px)";
-
-results.push(symbolsList[stopIndex].dataset.symbol);
-
-if(results.length===3){
-
-checkWin(results);
-
-spinBtn.disabled=false;
+alert("🎉 Você ganhou R$ "+premio)
+},200)
 
 }
 
-},2300+i*500);
-
-});
+atualizarSaldo()
 
 }
-
-function checkWin(r){
-
-if(r[0]===r[1] && r[1]===r[2]){
-
-let prize=20;
-
-if(r[0]=="wild") prize=50;
-
-credits+=prize;
-
-slot.classList.add("win");
-
-winSound.play();
-
-resultEl.innerText="🎉 JACKPOT +" + prize;
-
-}
-
-else if(r.includes("wild")){
-
-credits+=10;
-
-winSound.play();
-
-resultEl.innerText="⭐ Wild +10";
-
-}
-
-else{
-
-resultEl.innerText="Não ganhou";
-
-}
-
-updateCredits();
-
-}
-
-function updateCredits(){
-
-creditsEl.innerText=credits;
-
-localStorage.setItem("slotCredits",credits);
-
-}
-
-spinBtn.onclick=spin;
-
-init();
 
 </script>
+
 </body>
 </html>
