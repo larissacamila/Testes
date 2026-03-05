@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo de Slots Personalizado</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #1a1a2e;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #fff;
+            margin-bottom: 20px;
+        }
+
+        /* Container principal do slot */
+        .slot-machine {
+            background-color: #6a0dad;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        /* Área dos rolos */
+        .reels-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border: 3px solid #ffd700;
+            padding: 5px;
+            background-color: #3a0ca3;
+            border-radius: 10px;
+        }
+
+        .reel {
+            width: 100px;
+            height: 300px;
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .symbol {
+            width: 100%;
+            height: 100px;
+            position: absolute;
+            top: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .symbol img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+
+        /* Botões e displays */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .credits {
+            color: #fff;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        #spin-btn {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background-color: #ff2a6d;
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #spin-btn:disabled {
+            background-color: #888;
+            cursor: not-allowed;
+        }
+
+        #spin-btn:hover:not(:disabled) {
+            background-color: #ff5e8f;
+        }
+    </style>
+</head>
+<body>
+    <h1>Meu Jogo de Slots</h1>
+
+    <div class="slot-machine">
+        <!-- Rolo 1, 2 e 3 -->
+        <div class="reels-container">
+            <div class="reel" id="reel1"></div>
+            <div class="reel" id="reel2"></div>
+            <div class="reel" id="reel3"></div>
+        </div>
+
+        <div class="controls">
+            <div class="credits">Créditos: <span id="credits">100</span></div>
+            <button id="spin-btn">Girar!</button>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURAÇÃO - COLOQUE AQUI OS CAMINHOS DAS SUAS IMAGENS
+        const SYMBOLS = [
+            { src: "imagens/simbolo-forte.png", name: "forte" }, // Substitua pelo seu caminho
+            { src: "imagens/simbolo-folha.png", name: "folha" },
+            { src: "imagens/simbolo-moeda.png", name: "moeda" },
+            { src: "imagens/simbolo-wild.png", name: "wild" }, // Símbolo WILD
+            { src: "imagens/simbolo-saco.png", name: "saco" }   // Como na imagem que você mostrou
+        ];
+
+        const TOTAL_SYMBOLS_PER_REEL = 10; // Quantidade de símbolos por rolo (deixe maior que 3)
+        const REEL_HEIGHT = 300; // Altura do rolo (igual ao CSS)
+        const SYMBOL_HEIGHT = 100; // Altura de cada símbolo (igual ao CSS)
+        const SPIN_DURATION = 2000; // Duração da rotação em ms
+
+        // Elementos do DOM
+        const reels = [document.getElementById('reel1'), document.getElementById('reel2'), document.getElementById('reel3')];
+        const spinBtn = document.getElementById('spin-btn');
+        const creditsDisplay = document.getElementById('credits');
+        let credits = 100;
+
+        // Cria os símbolos em cada rolo
+        function initReels() {
+            reels.forEach(reel => {
+                reel.innerHTML = '';
+                for (let i = 0; i < TOTAL_SYMBOLS_PER_REEL; i++) {
+                    const randomIndex = Math.floor(Math.random() * SYMBOLS.length);
+                    const symbol = document.createElement('div');
+                    symbol.classList.add('symbol');
+                    symbol.style.top = `${i * SYMBOL_HEIGHT}px`;
+                    symbol.innerHTML = `<img src="${SYMBOLS[randomIndex].src}" alt="${SYMBOLS[randomIndex].name}">`;
+                    symbol.dataset.symbol = SYMBOLS[randomIndex].name;
+                    reel.appendChild(symbol);
+                }
+            });
+        }
+
+        // Função para girar os rolos
+        function spinReels() {
+            if (credits < 1) {
+                alert("Sem créditos suficientes!");
+                return;
+            }
+
+            credits -= 1;
+            creditsDisplay.textContent = credits;
+            spinBtn.disabled = true;
+
+            const results = [];
+
+            reels.forEach((reel, index) => {
+                // Calcula uma posição aleatória final
+                const randomOffset = Math.floor(Math.random() * TOTAL_SYMBOLS_PER_REEL) * SYMBOL_HEIGHT;
+                const totalScroll = REEL_HEIGHT * 5 + randomOffset; // Rola várias vezes antes de parar
+
+                // Animação do rolo
+                reel.style.transition = `transform ${SPIN_DURATION + (index * 300)}ms cubic-bezier(0.2, 0.8, 0.2, 1)`;
+                reel.style.transform = `translateY(-${totalScroll}px)`;
+
+                // Guarda o resultado quando a animação acabar
+                setTimeout(() => {
+                    const visibleSymbol = reel.querySelector(`.symbol[style="top: ${randomOffset}px"]`);
+                    results.push(visibleSymbol.dataset.symbol);
+                    reel.style.transition = 'none';
+                    reel.style.transform = `translateY(-${randomOffset}px)`;
+
+                    // Verifica resultados quando todos os rolos pararem
+                    if (results.length === 3) {
+                        checkResults(results);
+                        spinBtn.disabled = false;
+                    }
+                }, SPIN_DURATION + (index * 300));
+            });
+        }
+
+        // Verifica combinações vencedoras
+        function checkResults(results) {
+            console.log("Resultado:", results);
+            // Regra simples: 3 iguais ou 2 + wild = vitória
+            if (results[0] === results[1] && results[1] === results[2]) {
+                const winAmount = results[0] === 'wild' ? 50 : 20;
+                credits += winAmount;
+                alert(`Parabéns! Você ganhou ${winAmount} créditos!`);
+            } else if (
+                (results.includes('wild') && (results[0] === results[1] || results[1] === results[2] || results[0] === results[2]))
+            ) {
+                credits += 10;
+                alert(`Ganhou 10 créditos com Wild!`);
+            }
+            creditsDisplay.textContent = credits;
+        }
+
+        // Inicializa e adiciona evento ao botão
+        initReels();
+        spinBtn.addEventListener('click', spinReels);
+    </script>
+</body>
+</html>
