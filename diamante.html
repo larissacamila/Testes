@@ -1,140 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jogo de Slots</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+background:#1a1a2e;
+display:flex;
+flex-direction:column;
+align-items:center;
+padding:20px;
+}
+
+h1{
+color:white;
+margin-bottom:20px;
+}
+
+.slot-machine{
+background:#6a0dad;
+padding:20px;
+border-radius:15px;
+box-shadow:0 0 20px rgba(0,0,0,0.5);
+}
+
+.reels-container{
+display:flex;
+gap:10px;
+margin-bottom:20px;
+border:3px solid gold;
+padding:5px;
+background:#3a0ca3;
+border-radius:10px;
+}
+
+.reel{
+width:100px;
+height:300px;
+background:white;
+border-radius:8px;
+overflow:hidden;
+position:relative;
+}
+
+.symbol{
+width:100%;
+height:100px;
+position:absolute;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.symbol img{
+max-width:90%;
+max-height:90%;
+object-fit:contain;
+}
+
+.controls{
+display:flex;
+flex-direction:column;
+align-items:center;
+gap:15px;
+}
+
+.credits{
+color:white;
+font-size:20px;
+font-weight:bold;
+}
+
+#spin-btn{
+padding:15px 40px;
+font-size:18px;
+font-weight:bold;
+background:#ff2a6d;
+color:white;
+border:none;
+border-radius:25px;
+cursor:pointer;
+}
+
+#spin-btn:disabled{
+background:#888;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>Meu Slot</h1>
+
+<div class="slot-machine">
+
+<div class="reels-container">
+
+<div class="reel" id="reel1"></div>
+<div class="reel" id="reel2"></div>
+<div class="reel" id="reel3"></div>
+
+</div>
+
+<div class="controls">
+
+<div class="credits">
+Créditos: <span id="credits">100</span>
+</div>
+
+<button id="spin-btn">Girar</button>
+
+</div>
+
+</div>
+
 <script>
 
-const SYMBOLS = [
-    { src: "forte.jpg", name: "forte" },
-    { src: "folha.jpg", name: "folha" },
-    { src: "moeda.jpg", name: "moeda" },
-    { src: "wild.jpg", name: "wild" },
-    { src: "saco.png", name: "saco" }
+const SYMBOLS=[
+{src:"forte.jpg",name:"forte"},
+{src:"folha.jpg",name:"folha"},
+{src:"moeda.jpg",name:"moeda"},
+{src:"wild.jpg",name:"wild"},
+{src:"saco.png",name:"saco"}
 ];
 
-const SYMBOL_HEIGHT = 100;
-const TOTAL_SYMBOLS = 20;
-
-const reels = [
+const reels=[
 document.getElementById("reel1"),
 document.getElementById("reel2"),
 document.getElementById("reel3")
 ];
 
-const spinBtn = document.getElementById("spin-btn");
-const creditsDisplay = document.getElementById("credits");
+const spinBtn=document.getElementById("spin-btn");
+const creditsDisplay=document.getElementById("credits");
 
-let credits = 100;
+let credits=100;
 
-let reelPositions = [0,0,0];
+function randomSymbol(){
+return SYMBOLS[Math.floor(Math.random()*SYMBOLS.length)];
+}
 
-function createSymbol(symbol, top){
+function createSymbol(symbol,top){
 
-    const div = document.createElement("div");
-    div.className = "symbol";
-    div.style.top = top+"px";
+const div=document.createElement("div");
+div.className="symbol";
+div.style.top=top+"px";
 
-    div.innerHTML =
-    `<img src="${symbol.src}" alt="${symbol.name}">`;
+div.innerHTML=`<img src="${symbol.src}">`;
+div.dataset.symbol=symbol.name;
 
-    div.dataset.symbol = symbol.name;
+return div;
 
-    return div;
 }
 
 function initReels(){
 
-    reels.forEach((reel,i)=>{
+reels.forEach(reel=>{
 
-        reel.innerHTML="";
+reel.innerHTML="";
 
-        for(let j=0;j<TOTAL_SYMBOLS;j++){
+for(let i=0;i<3;i++){
 
-            const random =
-            SYMBOLS[Math.floor(Math.random()*SYMBOLS.length)];
+const s=randomSymbol();
 
-            reel.appendChild(
-                createSymbol(random, j*SYMBOL_HEIGHT)
-            );
+reel.appendChild(
+createSymbol(s,i*100)
+);
 
-        }
+}
 
-    });
+});
 
 }
 
 function spin(){
 
-    if(credits<=0){
-        alert("Sem créditos!");
-        return;
-    }
+if(credits<=0){
 
-    credits--;
-
-    creditsDisplay.innerText = credits;
-
-    spinBtn.disabled=true;
-
-    let results=[];
-
-    reels.forEach((reel,i)=>{
-
-        const randomIndex =
-        Math.floor(Math.random()*TOTAL_SYMBOLS);
-
-        reelPositions[i] = randomIndex;
-
-        const offset = randomIndex*SYMBOL_HEIGHT;
-
-        const spinDistance =
-        (TOTAL_SYMBOLS*SYMBOL_HEIGHT*3)+offset;
-
-        reel.style.transition =
-        "transform "+(2000+i*400)+"ms cubic-bezier(.2,.8,.2,1)";
-
-        reel.style.transform =
-        "translateY(-"+spinDistance+"px)";
-
-        setTimeout(()=>{
-
-            reel.style.transition="none";
-
-            reel.style.transform =
-            "translateY(-"+offset+"px)";
-
-            const symbol =
-            reel.children[randomIndex].dataset.symbol;
-
-            results.push(symbol);
-
-            if(results.length===3){
-
-                checkWin(results);
-
-                spinBtn.disabled=false;
-
-            }
-
-        },2000+i*400);
-
-    });
+alert("Sem créditos!");
+return;
 
 }
 
-function checkWin(res){
+credits--;
 
-console.log(res);
+creditsDisplay.innerText=credits;
 
-if(res[0]===res[1] && res[1]===res[2]){
+spinBtn.disabled=true;
 
-let prize = 20;
+let results=[];
 
-if(res[0]==="wild") prize=50;
+reels.forEach((reel,index)=>{
 
-credits+=prize;
+setTimeout(()=>{
 
-alert("🎉 Ganhou "+prize+" créditos!");
+reel.innerHTML="";
+
+for(let i=0;i<3;i++){
+
+const s=randomSymbol();
+
+reel.appendChild(
+createSymbol(s,i*100)
+);
+
+if(i===1){
+results.push(s.name);
+}
 
 }
 
-else if(res.includes("wild")){
+if(results.length===3){
+
+checkWin(results);
+spinBtn.disabled=false;
+
+}
+
+},500+index*500);
+
+});
+
+}
+
+function checkWin(r){
+
+if(r[0]===r[1] && r[1]===r[2]){
+
+let win=20;
+
+if(r[0]==="wild") win=50;
+
+credits+=win;
+
+alert("🎉 Ganhou "+win+" créditos!");
+
+}
+
+else if(r.includes("wild")){
 
 credits+=10;
 
@@ -142,12 +255,15 @@ alert("⭐ Wild pagou 10!");
 
 }
 
-creditsDisplay.innerText = credits;
+creditsDisplay.innerText=credits;
 
 }
 
-spinBtn.onclick = spin;
+spinBtn.onclick=spin;
 
 initReels();
 
 </script>
+
+</body>
+</html>
