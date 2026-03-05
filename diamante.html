@@ -3,19 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Jogo de Slots</title>
+
+<title>Slot Machine</title>
 
 <style>
 
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial, Helvetica, sans-serif;
-}
-
 body{
 background:#1a1a2e;
+font-family:Arial;
 display:flex;
 flex-direction:column;
 align-items:center;
@@ -27,73 +22,92 @@ color:white;
 margin-bottom:20px;
 }
 
-.slot-machine{
+.slot{
+
 background:#6a0dad;
 padding:20px;
 border-radius:15px;
-box-shadow:0 0 20px rgba(0,0,0,0.5);
+box-shadow:0 0 20px black;
+
 }
 
-.reels-container{
+.reels{
+
 display:flex;
 gap:10px;
 margin-bottom:20px;
-border:3px solid gold;
-padding:5px;
-background:#3a0ca3;
-border-radius:10px;
+
 }
 
 .reel{
-width:100px;
+
+width:110px;
 height:300px;
 background:white;
-border-radius:8px;
 overflow:hidden;
+border-radius:10px;
+border:3px solid gold;
 position:relative;
+
+}
+
+.reel-strip{
+
+position:absolute;
+top:0;
+width:100%;
+
 }
 
 .symbol{
+
 width:100%;
 height:100px;
-position:absolute;
 display:flex;
 align-items:center;
 justify-content:center;
+
 }
 
 .symbol img{
+
 max-width:90%;
 max-height:90%;
-object-fit:contain;
+
 }
 
 .controls{
+
 display:flex;
 flex-direction:column;
 align-items:center;
-gap:15px;
+gap:10px;
+
+}
+
+button{
+
+padding:15px 40px;
+font-size:18px;
+border:none;
+border-radius:20px;
+background:#ff2a6d;
+color:white;
+cursor:pointer;
+
+}
+
+button:disabled{
+
+background:#777;
+
 }
 
 .credits{
+
 color:white;
 font-size:20px;
-font-weight:bold;
-}
 
-#spin-btn{
-padding:15px 40px;
-font-size:18px;
-font-weight:bold;
-background:#ff2a6d;
-color:white;
-border:none;
-border-radius:25px;
-cursor:pointer;
-}
-
-#spin-btn:disabled{
-background:#888;
 }
 
 </style>
@@ -101,15 +115,23 @@ background:#888;
 
 <body>
 
-<h1>Meu Slot</h1>
+<h1>🎰 Meu Slot</h1>
 
-<div class="slot-machine">
+<div class="slot">
 
-<div class="reels-container">
+<div class="reels">
 
-<div class="reel" id="reel1"></div>
-<div class="reel" id="reel2"></div>
-<div class="reel" id="reel3"></div>
+<div class="reel">
+<div class="reel-strip" id="strip1"></div>
+</div>
+
+<div class="reel">
+<div class="reel-strip" id="strip2"></div>
+</div>
+
+<div class="reel">
+<div class="reel-strip" id="strip3"></div>
+</div>
 
 </div>
 
@@ -119,7 +141,7 @@ background:#888;
 Créditos: <span id="credits">100</span>
 </div>
 
-<button id="spin-btn">Girar</button>
+<button id="spin">Girar</button>
 
 </div>
 
@@ -135,51 +157,55 @@ const SYMBOLS=[
 {src:"saco.png",name:"saco"}
 ];
 
-const reels=[
-document.getElementById("reel1"),
-document.getElementById("reel2"),
-document.getElementById("reel3")
+const strips=[
+document.getElementById("strip1"),
+document.getElementById("strip2"),
+document.getElementById("strip3")
 ];
 
-const spinBtn=document.getElementById("spin-btn");
-const creditsDisplay=document.getElementById("credits");
+const spinBtn=document.getElementById("spin");
+
+const creditsEl=document.getElementById("credits");
 
 let credits=100;
 
 function randomSymbol(){
+
 return SYMBOLS[Math.floor(Math.random()*SYMBOLS.length)];
+
 }
 
-function createSymbol(symbol,top){
+function createSymbol(symbol){
 
 const div=document.createElement("div");
+
 div.className="symbol";
-div.style.top=top+"px";
 
 div.innerHTML=`<img src="${symbol.src}">`;
+
 div.dataset.symbol=symbol.name;
 
 return div;
 
 }
 
-function initReels(){
+function buildStrip(strip){
 
-reels.forEach(reel=>{
+strip.innerHTML="";
 
-reel.innerHTML="";
-
-for(let i=0;i<3;i++){
+for(let i=0;i<20;i++){
 
 const s=randomSymbol();
 
-reel.appendChild(
-createSymbol(s,i*100)
-);
+strip.appendChild(createSymbol(s));
 
 }
 
-});
+}
+
+function init(){
+
+strips.forEach(buildStrip);
 
 }
 
@@ -187,47 +213,61 @@ function spin(){
 
 if(credits<=0){
 
-alert("Sem créditos!");
+alert("Sem créditos");
+
 return;
 
 }
 
 credits--;
 
-creditsDisplay.innerText=credits;
+creditsEl.innerText=credits;
 
 spinBtn.disabled=true;
 
 let results=[];
 
-reels.forEach((reel,index)=>{
+strips.forEach((strip,i)=>{
+
+buildStrip(strip);
+
+const symbols=strip.children;
+
+const stopIndex=Math.floor(Math.random()*symbols.length);
+
+const offset=stopIndex*100;
+
+const spinDistance=(symbols.length*100*2)+offset;
+
+strip.style.transition="none";
+
+strip.style.transform="translateY(0px)";
 
 setTimeout(()=>{
 
-reel.innerHTML="";
+strip.style.transition="transform "+(2+i*0.5)+"s cubic-bezier(.2,.8,.2,1)";
 
-for(let i=0;i<3;i++){
+strip.style.transform="translateY(-"+spinDistance+"px)";
 
-const s=randomSymbol();
+},50);
 
-reel.appendChild(
-createSymbol(s,i*100)
-);
+setTimeout(()=>{
 
-if(i===1){
-results.push(s.name);
-}
+strip.style.transition="none";
 
-}
+strip.style.transform="translateY(-"+offset+"px)";
+
+results.push(symbols[stopIndex].dataset.symbol);
 
 if(results.length===3){
 
 checkWin(results);
+
 spinBtn.disabled=false;
 
 }
 
-},500+index*500);
+},2200+i*500);
 
 });
 
@@ -237,13 +277,13 @@ function checkWin(r){
 
 if(r[0]===r[1] && r[1]===r[2]){
 
-let win=20;
+let prize=20;
 
-if(r[0]==="wild") win=50;
+if(r[0]==="wild") prize=50;
 
-credits+=win;
+credits+=prize;
 
-alert("🎉 Ganhou "+win+" créditos!");
+alert("🎉 Ganhou "+prize);
 
 }
 
@@ -251,17 +291,17 @@ else if(r.includes("wild")){
 
 credits+=10;
 
-alert("⭐ Wild pagou 10!");
+alert("⭐ Wild pagou 10");
 
 }
 
-creditsDisplay.innerText=credits;
+creditsEl.innerText=credits;
 
 }
 
 spinBtn.onclick=spin;
 
-initReels();
+init();
 
 </script>
 
