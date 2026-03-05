@@ -3,31 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Slot Machine</title>
+<title>🎰 Cassino Slot</title>
 
 <style>
 
 body{
-background:#1a1a2e;
+background:radial-gradient(circle,#2a0066,#0a001f);
 font-family:Arial;
 display:flex;
 flex-direction:column;
 align-items:center;
 padding:20px;
+color:white;
 }
 
 h1{
-color:white;
 margin-bottom:20px;
 }
 
 .slot{
 
-background:#6a0dad;
+background:#4b0082;
 padding:20px;
 border-radius:15px;
-box-shadow:0 0 20px black;
+box-shadow:0 0 30px black;
 
 }
 
@@ -43,25 +42,24 @@ margin-bottom:20px;
 
 width:110px;
 height:300px;
-background:white;
 overflow:hidden;
 border-radius:10px;
-border:3px solid gold;
+border:4px solid gold;
+background:white;
 position:relative;
 
 }
 
-.reel-strip{
+.strip{
 
 position:absolute;
-top:0;
 width:100%;
+top:0;
 
 }
 
 .symbol{
 
-width:100%;
 height:100px;
 display:flex;
 align-items:center;
@@ -78,10 +76,7 @@ max-height:90%;
 
 .controls{
 
-display:flex;
-flex-direction:column;
-align-items:center;
-gap:10px;
+text-align:center;
 
 }
 
@@ -91,7 +86,7 @@ padding:15px 40px;
 font-size:18px;
 border:none;
 border-radius:20px;
-background:#ff2a6d;
+background:#ff0055;
 color:white;
 cursor:pointer;
 
@@ -99,14 +94,28 @@ cursor:pointer;
 
 button:disabled{
 
-background:#777;
+background:#555;
 
 }
 
 .credits{
 
-color:white;
-font-size:20px;
+font-size:22px;
+margin-bottom:10px;
+
+}
+
+.win{
+
+animation:flash 0.4s infinite;
+
+}
+
+@keyframes flash{
+
+0%{box-shadow:0 0 10px yellow;}
+50%{box-shadow:0 0 30px gold;}
+100%{box-shadow:0 0 10px yellow;}
 
 }
 
@@ -115,41 +124,36 @@ font-size:20px;
 
 <body>
 
-<h1>🎰 Diamantino Slot</h1>
+<h1>🎰 Cassino Slot</h1>
 
 <div class="slot">
 
 <div class="reels">
 
-<div class="reel">
-<div class="reel-strip" id="strip1"></div>
-</div>
-
-<div class="reel">
-<div class="reel-strip" id="strip2"></div>
-</div>
-
-<div class="reel">
-<div class="reel-strip" id="strip3"></div>
-</div>
+<div class="reel"><div class="strip" id="s1"></div></div>
+<div class="reel"><div class="strip" id="s2"></div></div>
+<div class="reel"><div class="strip" id="s3"></div></div>
 
 </div>
 
 <div class="controls">
 
 <div class="credits">
-Créditos: <span id="credits">100</span>
+Créditos: <span id="credits"></span>
 </div>
 
-<button id="spin">Girar</button>
+<button id="spin">GIRAR</button>
 
 </div>
 
 </div>
+
+<audio id="spinSound" src="spin.mp3"></audio>
+<audio id="winSound" src="win.mp3"></audio>
 
 <script>
 
-const SYMBOLS=[
+const symbols=[
 {src:"forte.jpg",name:"forte"},
 {src:"folha.jpg",name:"folha"},
 {src:"moeda.jpg",name:"moeda"},
@@ -158,20 +162,29 @@ const SYMBOLS=[
 ];
 
 const strips=[
-document.getElementById("strip1"),
-document.getElementById("strip2"),
-document.getElementById("strip3")
+document.getElementById("s1"),
+document.getElementById("s2"),
+document.getElementById("s3")
 ];
 
 const spinBtn=document.getElementById("spin");
 
 const creditsEl=document.getElementById("credits");
 
-let credits=100;
+const spinSound=document.getElementById("spinSound");
+const winSound=document.getElementById("winSound");
+
+let credits=localStorage.getItem("slotCredits");
+
+if(!credits) credits=100;
+
+credits=parseInt(credits);
+
+creditsEl.innerText=credits;
 
 function randomSymbol(){
 
-return SYMBOLS[Math.floor(Math.random()*SYMBOLS.length)];
+return symbols[Math.floor(Math.random()*symbols.length)];
 
 }
 
@@ -193,7 +206,7 @@ function buildStrip(strip){
 
 strip.innerHTML="";
 
-for(let i=0;i<20;i++){
+for(let i=0;i<30;i++){
 
 const s=randomSymbol();
 
@@ -221,9 +234,12 @@ return;
 
 credits--;
 
-creditsEl.innerText=credits;
+updateCredits();
 
 spinBtn.disabled=true;
+
+spinSound.currentTime=0;
+spinSound.play();
 
 let results=[];
 
@@ -237,7 +253,7 @@ const stopIndex=Math.floor(Math.random()*symbols.length);
 
 const offset=stopIndex*100;
 
-const spinDistance=(symbols.length*100*2)+offset;
+const distance=(symbols.length*100*2)+offset;
 
 strip.style.transition="none";
 
@@ -247,7 +263,7 @@ setTimeout(()=>{
 
 strip.style.transition="transform "+(2+i*0.5)+"s cubic-bezier(.2,.8,.2,1)";
 
-strip.style.transform="translateY(-"+spinDistance+"px)";
+strip.style.transform="translateY(-"+distance+"px)";
 
 },50);
 
@@ -267,7 +283,7 @@ spinBtn.disabled=false;
 
 }
 
-},2200+i*500);
+},2300+i*500);
 
 });
 
@@ -275,15 +291,23 @@ spinBtn.disabled=false;
 
 function checkWin(r){
 
+let slot=document.querySelector(".slot");
+
+slot.classList.remove("win");
+
 if(r[0]===r[1] && r[1]===r[2]){
 
 let prize=20;
 
-if(r[0]==="wild") prize=50;
+if(r[0]=="wild") prize=50;
 
 credits+=prize;
 
-alert("🎉 Ganhou "+prize);
+winSound.play();
+
+slot.classList.add("win");
+
+alert("🎉 JACKPOT! "+prize);
 
 }
 
@@ -291,11 +315,21 @@ else if(r.includes("wild")){
 
 credits+=10;
 
+winSound.play();
+
 alert("⭐ Wild pagou 10");
 
 }
 
+updateCredits();
+
+}
+
+function updateCredits(){
+
 creditsEl.innerText=credits;
+
+localStorage.setItem("slotCredits",credits);
 
 }
 
