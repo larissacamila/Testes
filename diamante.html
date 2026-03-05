@@ -159,7 +159,6 @@ Boa sorte!
 </div>
 
 </div>
-
 <script>
 
 const symbols=[
@@ -180,6 +179,9 @@ const spinBtn=document.getElementById("spin");
 const creditsEl=document.getElementById("credits");
 const resultEl=document.getElementById("result");
 const slot=document.getElementById("slot");
+
+const spinSound=new Audio("spin.mp3");
+const winSound=new Audio("win.mp3");
 
 let credits=localStorage.getItem("slotCredits");
 
@@ -211,25 +213,22 @@ return div;
 
 function buildStrip(strip){
 
-strip.innerHTML="";
-
 let list=[];
 
-for(let i=0;i<20;i++){
-
+for(let i=0;i<30;i++){
 list.push(randomSymbol());
-
 }
 
 list.forEach(s=>strip.appendChild(createSymbol(s)));
-
 list.forEach(s=>strip.appendChild(createSymbol(s)));
 
 }
 
 function init(){
 
-strips.forEach(buildStrip);
+strips.forEach(strip=>{
+buildStrip(strip);
+});
 
 }
 
@@ -245,34 +244,32 @@ return;
 slot.classList.remove("win");
 
 credits--;
-
 updateCredits();
 
 resultEl.innerText="Girando...";
 
 spinBtn.disabled=true;
 
+spinSound.currentTime=0;
+spinSound.play();
+
 let results=[];
 
 strips.forEach((strip,i)=>{
 
-buildStrip(strip);
+const symbolsList=strip.children;
 
-const symbols=strip.children;
-
-const stopIndex=Math.floor(Math.random()*20);
+const stopIndex=Math.floor(Math.random()*30);
 
 const offset=stopIndex*100;
 
-const distance=(symbols.length*100)+offset;
+const distance=(symbolsList.length*100)+offset;
 
 strip.style.transition="none";
-strip.style.transform="translateY(0px)";
 
 setTimeout(()=>{
 
 strip.style.transition="transform "+(2+i*0.5)+"s cubic-bezier(.2,.8,.2,1)";
-
 strip.style.transform="translateY(-"+distance+"px)";
 
 },50);
@@ -280,13 +277,15 @@ strip.style.transform="translateY(-"+distance+"px)";
 setTimeout(()=>{
 
 strip.style.transition="none";
+
 strip.style.transform="translateY(-"+offset+"px)";
 
-results.push(symbols[stopIndex].dataset.symbol);
+results.push(symbolsList[stopIndex].dataset.symbol);
 
 if(results.length===3){
 
 checkWin(results);
+
 spinBtn.disabled=false;
 
 }
@@ -309,7 +308,9 @@ credits+=prize;
 
 slot.classList.add("win");
 
-resultEl.innerText="🎉 JACKPOT! +" + prize + " créditos";
+winSound.play();
+
+resultEl.innerText="🎉 JACKPOT +" + prize;
 
 }
 
@@ -317,13 +318,15 @@ else if(r.includes("wild")){
 
 credits+=10;
 
-resultEl.innerText="⭐ Wild pagou +10";
+winSound.play();
+
+resultEl.innerText="⭐ Wild +10";
 
 }
 
 else{
 
-resultEl.innerText="Não ganhou. Tente novamente.";
+resultEl.innerText="Não ganhou";
 
 }
 
@@ -344,6 +347,5 @@ spinBtn.onclick=spin;
 init();
 
 </script>
-
 </body>
 </html>
