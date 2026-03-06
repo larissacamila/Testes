@@ -165,7 +165,7 @@ const symbols=[
 {src:"forte.jpg",name:"forte"},
 {src:"folha.jpg",name:"folha"},
 {src:"moeda.jpg",name:"moeda"},
-{src:"wild.jpg",name:"wild"},
+{src:"wild.jpg",name:"Diamantino"},
 {src:"saco.jpg",name:"saco"}
 ];
 
@@ -181,7 +181,7 @@ const resultEl=document.getElementById("result");
 const slot=document.getElementById("slot");
 
 const spinSound=new Audio("jogo2.mp3");
-const winSound=new Audio("audio.mp3");
+const winSound=new Audio("audio1.mp3");
 
 let credits=localStorage.getItem("slotCredits");
 
@@ -326,7 +326,7 @@ resultEl.innerText="⭐ Wild +10";
 
 else{
 
-resultEl.innerText="Não ganhou";
+resultEl.innerText="Oh! não deu";
 
 }
 
