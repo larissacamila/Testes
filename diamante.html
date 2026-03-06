@@ -302,11 +302,11 @@ if(r[0]===r[1] && r[1]===r[2]){
 
 let prize=20;
 
-if(r[0]=="wild") prize=50;
+if(r[0]=="Diamantino") prize=50;
 
 credits+=prize;
 
-slot.classList.add("win");
+slot.classList.add("Diamantino");
 
 winSound.play();
 
@@ -314,13 +314,13 @@ resultEl.innerText="🎉 JACKPOT +" + prize;
 
 }
 
-else if(r.includes("wild")){
+else if(r.includes("Diamantino")){
 
 credits+=10;
 
 winSound.play();
 
-resultEl.innerText="⭐ Wild +10";
+resultEl.innerText="⭐ Diamantino +10";
 
 }
 
