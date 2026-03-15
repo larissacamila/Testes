@@ -3,146 +3,127 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Cassino Online</title>
+<title>🎰 Cassino Slot</title>
 
 <style>
 
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial;
-}
-
 body{
-background:#0f0f0f;
-color:white;
-padding-bottom:80px;
-}
-
-/* TOPO */
-
-.header{
-background:black;
-padding:15px;
+background:radial-gradient(circle,#2a0066,#0a001f);
+font-family:Arial;
 display:flex;
-justify-content:space-between;
+flex-direction:column;
 align-items:center;
+padding:20px;
+color:white;
 }
 
-.logo{
-font-size:20px;
-font-weight:bold;
-color:#ff7a00;
+h1{
+margin-bottom:20px;
 }
 
-.login{
-background:#ff7a00;
-padding:8px 14px;
-border-radius:6px;
-}
+.slot{
 
-/* BANNER */
-
-.banner{
-width:100%;
-padding:10px;
-}
-
-.banner img{
-width:100%;
-border-radius:10px;
-}
-
-/* TITULO */
-
-.titulo{
-padding:15px;
-font-size:18px;
-font-weight:bold;
-}
-
-/* GRID */
-
-.jogos{
-
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:12px;
-padding:10px;
+background:#4b0082;
+padding:20px;
+border-radius:15px;
+box-shadow:0 0 30px black;
 
 }
 
-/* CARD */
+.reels{
 
-.card{
+display:flex;
+gap:10px;
+margin-bottom:20px;
 
-position:relative;
+}
+
+.reel{
+
+width:110px;
+height:300px;
 overflow:hidden;
 border-radius:10px;
+border:4px solid gold;
+background:white;
+position:relative;
 
 }
 
-.card img{
-width:100%;
-display:block;
-transition:0.3s;
-}
-
-.card:hover img{
-transform:scale(1.08);
-}
-
-/* NOME */
-
-.nome{
+.strip{
 
 position:absolute;
-bottom:0;
 width:100%;
-background:linear-gradient(transparent,rgba(0,0,0,0.9));
-padding:6px;
-font-size:13px;
-text-align:center;
+top:0;
 
 }
 
-/* MENU INFERIOR */
+.symbol{
 
-.menu{
-
-position:fixed;
-bottom:0;
-width:100%;
-background:#111;
+height:100px;
 display:flex;
-justify-content:space-around;
-padding:10px 0;
+align-items:center;
+justify-content:center;
 
 }
 
-.menu div{
+.symbol img{
+
+max-width:90%;
+max-height:90%;
+
+}
+
+.controls{
 
 text-align:center;
-font-size:13px;
-color:#bbb;
 
 }
 
-.menu div:hover{
+button{
 
-color:#ff7a00;
+padding:15px 40px;
+font-size:18px;
+border:none;
+border-radius:20px;
+background:#ff0055;
+color:white;
+cursor:pointer;
 
 }
 
-/* RESPONSIVO */
+button:disabled{
 
-@media(max-width:700px){
+background:#555;
 
-.jogos{
-grid-template-columns:repeat(2,1fr);
 }
+
+.credits{
+
+font-size:22px;
+margin-bottom:10px;
+
+}
+
+.result{
+
+margin-top:10px;
+font-size:20px;
+color:gold;
+
+}
+
+.win{
+
+animation:flash 0.4s infinite;
+
+}
+
+@keyframes flash{
+
+0%{box-shadow:0 0 10px yellow;}
+50%{box-shadow:0 0 30px gold;}
+100%{box-shadow:0 0 10px yellow;}
 
 }
 
@@ -151,83 +132,220 @@ grid-template-columns:repeat(2,1fr);
 
 <body>
 
-<!-- TOPO -->
+<h1>🎰 Diamantino Slot</h1>
 
-<div class="header">
+<div class="slot" id="slot">
 
-<div class="logo">DIAMANTE TROPICAL</div>
+<div class="reels">
 
-<div class="login">Login</div>
-
-</div>
-
-<!-- BANNER -->
-
-<div class="banner">
-<img src="banner.jpg">
-</div>
-
-<!-- JOGOS -->
-
-<div class="titulo">🔥 Jogos Populares</div>
-
-<div class="jogos">
-
-<a href="https://diamantinojunior204-coder.github.io/tropical/">
-<div class="card">
-<img src="img/jogo1.jpg">
-<div class="nome">Gates of Olympus</div>
-</div>
-</a>
-
-<a href="LINK_DO_JOGO">
-<div class="card">
-<img src="img/jogo2.jpg">
-<div class="nome">Fortune Mouse</div>
-</div>
-</a>
-
-<a href="LINK_DO_JOGO">
-<div class="card">
-<img src="img/jogo3.jpg">
-<div class="nome">Fortune Gems</div>
-</div>
-</a>
-
-<a href="LINK_DO_JOGO">
-<div class="card">
-<img src="img/jogo4.jpg">
-<div class="nome">Onça Sortuda</div>
-</div>
-</a>
-
-<a href="LINK_DO_JOGO">
-<div class="card">
-<img src="img/jogo5.jpg">
-<div class="nome">Money Pot</div>
-</div>
-</a>
-
-<a href="LINK_DO_JOGO">
-<div class="card">
-<img src="img/jogo6.jpg">
-<div class="nome">Wild Sevens</div>
-</div>
-</a>
+<div class="reel"><div class="strip" id="s1"></div></div>
+<div class="reel"><div class="strip" id="s2"></div></div>
+<div class="reel"><div class="strip" id="s3"></div></div>
 
 </div>
 
-<!-- MENU -->
+<div class="controls">
 
-<div class="menu">
+<div class="credits">
+Créditos: <span id="credits"></span>
+</div>
 
-<div>🏠<br>Início</div>
-<div>💰<br>Depósito</div>
-<div>🎁<br>Promoções</div>
-<div>⚽<br>Esportes</div>
-<div>👤<br>Perfil</div>
+<button id="spin">GIRAR</button>
+
+<div class="result" id="result">
+Boa sorte!
+</div>
 
 </div>
 
+</div>
+<script>
+
+const symbols=[
+{src:"forte.jpg",name:"forte"},
+{src:"folha.jpg",name:"folha"},
+{src:"moeda.jpg",name:"moeda"},
+{src:"wild.jpg",name:"Diamantino"},
+{src:"saco.jpg",name:"saco"}
+];
+
+const strips=[
+document.getElementById("s1"),
+document.getElementById("s2"),
+document.getElementById("s3")
+];
+
+const spinBtn=document.getElementById("spin");
+const creditsEl=document.getElementById("credits");
+const resultEl=document.getElementById("result");
+const slot=document.getElementById("slot");
+
+const spinSound=new Audio("jogo2.mp3");
+const winSound=new Audio("audio1.mp3");
+
+let credits=localStorage.getItem("slotCredits");
+
+if(!credits) credits=100;
+
+credits=parseInt(credits);
+
+creditsEl.innerText=credits;
+
+function randomSymbol(){
+
+return symbols[Math.floor(Math.random()*symbols.length)];
+
+}
+
+function createSymbol(symbol){
+
+const div=document.createElement("div");
+
+div.className="symbol";
+
+div.innerHTML=`<img src="${symbol.src}">`;
+
+div.dataset.symbol=symbol.name;
+
+return div;
+
+}
+
+function buildStrip(strip){
+
+let list=[];
+
+for(let i=0;i<30;i++){
+list.push(randomSymbol());
+}
+
+list.forEach(s=>strip.appendChild(createSymbol(s)));
+list.forEach(s=>strip.appendChild(createSymbol(s)));
+
+}
+
+function init(){
+
+strips.forEach(strip=>{
+buildStrip(strip);
+});
+
+}
+
+function spin(){
+
+if(credits<=0){
+
+resultEl.innerText="Sem créditos!";
+return;
+
+}
+
+slot.classList.remove("win");
+
+credits--;
+updateCredits();
+
+resultEl.innerText="Girando...";
+
+spinBtn.disabled=true;
+
+spinSound.currentTime=0;
+spinSound.play();
+
+let results=[];
+
+strips.forEach((strip,i)=>{
+
+const symbolsList=strip.children;
+
+const stopIndex=Math.floor(Math.random()*30);
+
+const offset=stopIndex*100;
+
+const distance=(symbolsList.length*100)+offset;
+
+strip.style.transition="none";
+
+setTimeout(()=>{
+
+strip.style.transition="transform "+(2+i*0.5)+"s cubic-bezier(.2,.8,.2,1)";
+strip.style.transform="translateY(-"+distance+"px)";
+
+},50);
+
+setTimeout(()=>{
+
+strip.style.transition="none";
+
+strip.style.transform="translateY(-"+offset+"px)";
+
+results.push(symbolsList[stopIndex].dataset.symbol);
+
+if(results.length===3){
+
+checkWin(results);
+
+spinBtn.disabled=false;
+
+}
+
+},2300+i*500);
+
+});
+
+}
+
+function checkWin(r){
+
+if(r[0]===r[1] && r[1]===r[2]){
+
+let prize=20;
+
+if(r[0]=="Diamantino") prize=50;
+
+credits+=prize;
+
+slot.classList.add("win");
+
+winSound.play();
+
+resultEl.innerText="🎉 JACKPOT +" + prize;
+
+}
+
+else if(r.includes("Diamantino")){
+
+credits+=10;
+
+winSound.play();
+
+resultEl.innerText="⭐ Diamantino +10";
+
+}
+
+else{
+
+resultEl.innerText="Oh! não deu";
+
+}
+
+updateCredits();
+
+}
+
+function updateCredits(){
+
+creditsEl.innerText=credits;
+
+localStorage.setItem("slotCredits",credits);
+
+}
+
+spinBtn.onclick=spin;
+
+init();
+
+</script>
 </body>
 </html>
